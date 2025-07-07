@@ -1,6 +1,6 @@
 import React from 'react';
-import Header from './Header';
-import FooterSection from './Footer';
+import Header from '../components/Header';
+import FooterSection from '../components/Footer';
 import backgroundImg from '../assets/image/background.png';
 import { Link } from 'react-router-dom';
 

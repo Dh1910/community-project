@@ -16,7 +16,7 @@ import Benefits from './components/Benefits.jsx';
 import CTA from './components/CTA.jsx';
 import Footer from './components/Footer.jsx';
 import Explore from './pages/Explore.jsx';
-
+import About from './pages/About.jsx';
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
     <>
@@ -88,7 +88,10 @@ function App() {
         {/* ✅ Login and Signup as Full Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+ <Route path="/about" element={<About />} />
       </Routes>
+
+     
     </Router>
   );
 }
