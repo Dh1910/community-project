@@ -1,19 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
-import Header from './pages/Header.jsx';
-import HeroSection from './pages/HeroSection.jsx';
-import Skills from './pages/Skills.jsx';
+
+import Header from './components/Header.jsx';
+import HeroSection from './components/HeroSection.jsx';
+import Skills from './components/Skills.jsx';
 import HowItWorks from './pages/HowItWorks.jsx';
 import Community from './pages/Community.jsx';
-import CreatePostModal from './components/CreatePostModal';
-import StartDiscussionModal from './components/StartDiscussionModal';
-import Login from './components/Login'; // ✅
-import Signup from './components/Signup'; // ✅
-import Users from './pages/Users.jsx';
-import Feed from './pages/Feed.jsx';
-import Benefits from './pages/Benefits.jsx';
-import CTA from './pages/CTA.jsx';
-import Footer from './pages/Footer.jsx';
+import CreatePostModal from './pages/CreatePostModal.jsx';
+import StartDiscussionModal from './pages/StartDiscussionModal.jsx';
+import Login from './pages/Login.jsx';  // ✅ Used as modal AND route
+import Signup from './pages/Signup.jsx'; // ✅ Used as modal AND route
+import Users from './components/Users.jsx';
+import Feed from './components/Feed.jsx';
+import Benefits from './components/Benefits.jsx';
+import CTA from './components/CTA.jsx';
+import Footer from './components/Footer.jsx';
 import Explore from './pages/Explore.jsx';
 
 function HomePage({ openModal, openLogin, openSignup }) {
@@ -47,6 +48,7 @@ function App() {
       <Signup isOpen={showSignup} onClose={() => setShowSignup(false)} />
 
       <Routes>
+        {/* 🏠 Home Page */}
         <Route
           path="/"
           element={
@@ -57,6 +59,8 @@ function App() {
             />
           }
         />
+
+        {/* 🔍 Explore Skills */}
         <Route
           path="/explore"
           element={
@@ -67,6 +71,8 @@ function App() {
             />
           }
         />
+
+        {/* 🧑‍🤝‍🧑 Community Page */}
         <Route
           path="/community"
           element={
@@ -78,6 +84,10 @@ function App() {
             />
           }
         />
+
+        {/* ✅ Login and Signup as Full Pages */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </Router>
   );

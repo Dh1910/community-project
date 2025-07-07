@@ -7,7 +7,7 @@ function Header() {
         {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-['Pacifico'] text-primary transform transition-transform duration-300 hover:scale-110"
+          className="text-2xl font-[Pacifico] text-[#7c3aed] transform transition-transform duration-300 hover:scale-110"
         >
           Grow With Me
         </Link>
