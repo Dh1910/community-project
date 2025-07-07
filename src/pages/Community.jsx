@@ -362,13 +362,13 @@ function Community({ openModal, openDiscussionModal }) {
   <div className="flex justify-center gap-4 flex-wrap">
     <a
       href="/signup"
-      className="bg-white text-[#7c3aed] font-semibold px-6 py-3 rounded-md hover:bg-gray-100 transition"
+      className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed] transition-all"
     >
       Create Your Account
     </a>
     <a
       href="/community"
-      className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed] transition"
+      className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed] transition-all"
     >
       Explore Community
     </a>
