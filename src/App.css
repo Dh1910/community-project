@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+
+/* Custom violet filter to color black PNGs as #7c3aed */
+.filter-custom-violet {
+  filter: brightness(0) saturate(100%) invert(13%) sepia(84%) saturate(7417%) hue-rotate(248deg) brightness(94%) contrast(105%);
+}
