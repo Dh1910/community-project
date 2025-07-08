@@ -1,4 +1,3 @@
-// File: src/pages/Profile.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -8,6 +7,7 @@ import Footer from '../components/Footer';
 const Profile = () => {
   const [profile, setProfile] = useState({ full_name: '', email: '', age: '', contact: '', birthdate: '' });
   const [userId, setUserId] = useState(null);
+  const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,12 +30,14 @@ const Profile = () => {
   }, []);
 
   const handleSave = async () => {
-    console.log("Button clicked");
     const { error } = await supabase.from('profiles').upsert([{ id: userId, ...profile }]);
     if (!error) {
-      console.log("Data saved, redirecting...");
-      navigate('/profile-summary');
+      setAlertMessage('✅ Profile updated successfully!');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500); // Wait 1.5s before redirect
     } else {
+      setAlertMessage('❌ Failed to update profile.');
       console.error("Save error:", error);
     }
   };
@@ -49,7 +51,7 @@ const Profile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (window.confirm('Are you sure you want to delete your account?')) {
       await supabase.from('profiles').delete().eq('id', user.id);
-      await supabase.auth.admin.deleteUser(user.id);
+      await supabase.auth.admin.deleteUser(user.id); // Requires admin privileges
       navigate('/signup');
     }
   };
@@ -62,6 +64,12 @@ const Profile = () => {
       <div className="min-h-screen pt-28 px-4 bg-gray-50 pb-16">
         <div className="max-w-xl mx-auto bg-white p-6 rounded shadow relative">
           <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile</h2>
+
+          {alertMessage && (
+            <div className="mb-4 text-center text-green-600 font-semibold">
+              {alertMessage}
+            </div>
+          )}
 
           <form className="space-y-4">
             <input name="full_name" value={profile.full_name} onChange={handleChange} placeholder="Full Name" className="w-full border px-3 py-2 rounded" />
