@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const CreatePostModal = ({ isOpen, onClose }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
+  const [imageUrl, setImageUrl] = useState('');
 
-    // Cleanup on unmount
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -55,13 +51,23 @@ const CreatePostModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Image Upload */}
+        {/* Image by URL */}
         <div className="mb-3">
-          <label className="text-sm font-medium">Add Image</label>
-          <div className="border-2 border-dashed rounded-md p-3 text-center text-sm text-gray-500 mt-1 cursor-pointer hover:border-primary/60">
-            <i className="ri-image-add-line text-xl mb-1 inline-block" />
-            <p className="text-xs">Click or drag to upload</p>
-          </div>
+          <label className="text-sm font-medium">Image URL</label>
+          <input
+            type="url"
+            placeholder="Paste image URL here"
+            className="w-full border rounded-md px-3 py-1.5 mt-1 text-sm"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="mt-3 rounded-md w-full max-h-60 object-cover border"
+            />
+          )}
         </div>
 
         {/* Visibility */}
