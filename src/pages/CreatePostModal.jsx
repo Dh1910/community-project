@@ -13,78 +13,96 @@ const CreatePostModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="bg-white w-full max-w-md max-h-[80vh] overflow-y-auto rounded-lg shadow-lg p-4 relative">
-        {/* Close Button */}
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center">
+      <div className="bg-white w-full max-w-lg mx-auto rounded-xl shadow-2xl p-6 relative">
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-500 hover:text-black text-xl"
+          className="absolute top-3 right-4 text-gray-400 hover:text-gray-800 text-2xl"
         >
           &times;
         </button>
 
-        <h2 className="text-base font-semibold mb-3">Create New Post</h2>
+        {/* Header */}
+        <h2 className="text-xl font-bold text-center mb-6 text-gray-800">
+          📝 Create New Post
+        </h2>
 
         {/* Title */}
-        <label className="text-sm font-medium">Title</label>
-        <input
-          type="text"
-          placeholder="Enter post title"
-          className="w-full border rounded-md px-3 py-1.5 mt-1 mb-3 text-sm focus:outline-primary"
-        />
+        <div className="mb-4">
+          <label className="text-sm font-medium text-gray-700">Title</label>
+          <input
+            type="text"
+            placeholder="Your post title..."
+            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+          />
+        </div>
 
         {/* Content */}
-        <label className="text-sm font-medium">Content</label>
-        <textarea
-          placeholder="Write post content..."
-          rows={3}
-          className="w-full border rounded-md px-3 py-1.5 mt-1 mb-3 text-sm"
-        ></textarea>
+        <div className="mb-4">
+          <label className="text-sm font-medium text-gray-700">Content</label>
+          <textarea
+            rows={3}
+            placeholder="Share your thoughts..."
+            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none resize-none"
+          ></textarea>
+        </div>
 
         {/* Tags */}
-        <div className="mb-3">
-          <label className="text-sm font-medium">Category & Tags</label>
+        <div className="mb-4">
+          <label className="text-sm font-medium text-gray-700">Tags</label>
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className="px-2 py-1 bg-[#e9d5ff] text-[#7c3aed] rounded-full text-xs font-medium">Technology</span>
-            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">Creative</span>
-            <button className="px-2 py-1 bg-gray-200 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-300">+ Add</button>
+            <span className="px-3 py-1 text-xs font-medium rounded-full bg-violet-100 text-violet-700">Coding</span>
+            <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">Fitness</span>
+            <button className="px-3 py-1 text-xs font-medium rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600">+ Add</button>
           </div>
         </div>
 
-        {/* Image by URL */}
-        <div className="mb-3">
-          <label className="text-sm font-medium">Image URL</label>
+        {/* Image URL */}
+        <div className="mb-4">
+          <label className="text-sm font-medium text-gray-700">Image URL</label>
           <input
             type="url"
-            placeholder="Paste image URL here"
-            className="w-full border rounded-md px-3 py-1.5 mt-1 text-sm"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="Paste image URL"
+            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
           />
           {imageUrl && (
             <img
               src={imageUrl}
               alt="Preview"
-              className="mt-3 rounded-md w-full max-h-60 object-cover border"
+              className="mt-3 rounded-lg max-h-48 object-cover w-full border"
             />
           )}
         </div>
 
         {/* Visibility */}
-        <div className="mb-4">
-          <label className="text-sm font-medium">Visibility</label>
-          <div className="flex items-center gap-4 mt-2 text-sm">
-            <label><input type="radio" name="visibility" defaultChecked className="mr-1" /> Public</label>
-            <label><input type="radio" name="visibility" className="mr-1" /> Private</label>
+        <div className="mb-6">
+          <label className="text-sm font-medium text-gray-700">Visibility</label>
+          <div className="flex gap-4 mt-2">
+            <label className="text-sm text-gray-600">
+              <input type="radio" name="visibility" defaultChecked className="mr-2 accent-violet-600" />
+              Public
+            </label>
+            <label className="text-sm text-gray-600">
+              <input type="radio" name="visibility" className="mr-2 accent-violet-600" />
+              Private
+            </label>
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Actions */}
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-3 py-1.5 rounded-md border text-gray-600 hover:bg-gray-100 text-sm">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
             Cancel
           </button>
-          <button className="px-3 py-1.5 rounded-md bg-[#7c3aed] text-white hover:bg-[#6b21a8] text-sm">
+          <button
+            className="px-4 py-2 text-sm font-medium rounded-md bg-violet-600 text-white hover:bg-violet-700"
+          >
             Publish
           </button>
         </div>
