@@ -17,6 +17,10 @@ import CTA from './components/CTA.jsx';
 import Footer from './components/Footer.jsx';
 import Explore from './pages/Explore.jsx';
 import About from './pages/About.jsx';
+import Profile from './pages/Profile';
+import ProfileSummary from './pages/ProfileSummary';
+
+
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
     <>
@@ -89,6 +93,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
  <Route path="/about" element={<About />} />
+ <Route path="/profile" element={<Profile />} />
+ <Route path="/profile-summary" element={<ProfileSummary />} />
+
       </Routes>
 
      

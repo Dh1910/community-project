@@ -1,9 +1,63 @@
-import { Link } from 'react-router-dom';
-import Header from '../components/Header'; // ✅ adjust the path if needed
-import Footer from '../components/Footer'; // ✅ adjust the path if needed
+// File: src/pages/Signup.jsx
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { supabase } from '../supabaseClient';
 
 const Signup = ({ isOpen, onClose }) => {
-  // 👉 Full page version (used via route `/signup`)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const navigate = useNavigate();
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMsg('');
+
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (signUpError) {
+      if (
+        signUpError.message.toLowerCase().includes('already registered') ||
+        signUpError.message.toLowerCase().includes('user already exists') ||
+        signUpError.message.toLowerCase().includes('duplicate')
+      ) {
+        setErrorMsg('This email is already registered. Please log in instead.');
+      } else {
+        setErrorMsg('Signup failed: ' + signUpError.message);
+      }
+      setIsSubmitting(false);
+      return;
+    }
+
+    const userId = signUpData?.user?.id;
+
+    if (userId) {
+      const { error: profileError } = await supabase.from('profiles').upsert([
+        {
+          id: userId,
+          full_name: name,
+        },
+      ]);
+
+      if (profileError) {
+        setErrorMsg('Profile creation failed: ' + profileError.message);
+      } else {
+        navigate('/login');
+      }
+    }
+
+    setIsSubmitting(false);
+  };
+
   if (isOpen === undefined) {
     return (
       <>
@@ -12,31 +66,17 @@ const Signup = ({ isOpen, onClose }) => {
           <div className="flex-grow flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-md mb-12">
               <h1 className="text-2xl font-bold text-center text-[#7c3aed] mb-4">Sign Up</h1>
-              <form className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-[#7c3aed] text-white py-2 rounded hover:bg-[#6d28d9] transition"
-                >
-                  Sign Up
+              {errorMsg && <div className="text-red-600 text-sm text-center mb-2">{errorMsg}</div>}
+              <form onSubmit={handleSignup} className="space-y-4">
+                <input name="name" type="text" placeholder="Name" className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]" required />
+                <input name="email" type="email" placeholder="Email" className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]" required />
+                <input name="password" type="password" placeholder="Password" className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]" required />
+                <button type="submit" disabled={isSubmitting} className={`w-full py-2 rounded transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'}`}>
+                  {isSubmitting ? 'Signing Up...' : 'Sign Up'}
                 </button>
               </form>
               <p className="text-center text-sm mt-4 text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link to="/login" className="text-[#7c3aed] hover:underline font-medium">
                   Log in
                 </Link>
@@ -49,41 +89,20 @@ const Signup = ({ isOpen, onClose }) => {
     );
   }
 
-  // ❌ Modal version closed
   if (!isOpen) return null;
 
-  // 👉 Modal version
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-white rounded-lg p-6 w-full max-w-md relative shadow-lg">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-4 text-gray-500 text-2xl"
-        >
-          &times;
-        </button>
+        <button onClick={onClose} className="absolute top-2 right-4 text-gray-500 text-2xl">&times;</button>
         <h2 className="text-xl font-bold mb-4 text-[#7c3aed]">Sign Up</h2>
-        <form className="space-y-4">
-          <input
-            type="text"
-            placeholder="Name"
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full border p-2 rounded"
-          />
-          <button
-            type="submit"
-            className="w-full bg-[#7c3aed] text-white py-2 rounded hover:bg-[#6d28d9] transition"
-          >
-            Sign Up
+        {errorMsg && <div className="text-red-600 text-sm text-center mb-2">{errorMsg}</div>}
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input name="name" type="text" placeholder="Name" className="w-full border p-2 rounded" required />
+          <input name="email" type="email" placeholder="Email" className="w-full border p-2 rounded" required />
+          <input name="password" type="password" placeholder="Password" className="w-full border p-2 rounded" required />
+          <button type="submit" disabled={isSubmitting} className={`w-full py-2 rounded transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'}`}>
+            {isSubmitting ? 'Signing Up...' : 'Sign Up'}
           </button>
         </form>
       </div>
