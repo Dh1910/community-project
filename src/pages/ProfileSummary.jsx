@@ -103,7 +103,6 @@ const ProfileSummary = () => {
               <div className="flex flex-col absolute right-0 top-6 bg-white border shadow rounded text-sm w-40 z-10 text-left">
                 <a href="/profile" className="px-4 py-2 pl-4 hover:bg-gray-100">Edit Profile</a>
                 <button onClick={handleLogout} className="px-4 py-2 pl-4 text-left hover:bg-gray-100">Logout</button>
-                <button onClick={handleDelete} className="px-4 py-2 pl-4 text-left text-red-500 hover:bg-red-50">Delete Profile Data</button>
               </div>
             )}
           </div>

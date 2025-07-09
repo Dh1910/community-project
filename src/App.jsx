@@ -88,17 +88,15 @@ function App() {
             />
           }
         />
-
-        {/* ✅ Login and Signup as Full Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
- <Route path="/about" element={<About />} />
- <Route path="/profile" element={<Profile />} />
- <Route path="/profile-summary" element={<ProfileSummary />} />
-
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile-summary" element={<ProfileSummary />} />
+        
       </Routes>
 
-     
+
     </Router>
   );
 }
