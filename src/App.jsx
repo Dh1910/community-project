@@ -19,7 +19,10 @@ import Explore from './pages/Explore.jsx';
 import About from './pages/About.jsx';
 import Profile from './pages/Profile';
 import ProfileSummary from './pages/ProfileSummary';
-
+import FAQ from './pages/FAQ.jsx';
+import Contactus from './pages/Contactus.jsx';
+import Privacy from './pages/Privacy.jsx';
+import TOS from './pages/TOS.jsx';
 
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
@@ -93,7 +96,11 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile-summary" element={<ProfileSummary />} />
-        
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<Contactus />} />
+        <Route path="/privacy-policy" element={<Privacy />} />
+        <Route path="/terms" element={<TOS/>} />
+
       </Routes>
 
 
