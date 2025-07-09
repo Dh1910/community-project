@@ -5,40 +5,83 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const Profile = () => {
-  const [profile, setProfile] = useState({ full_name: '', email: '', age: '', contact: '', birthdate: '' });
+  const [profile, setProfile] = useState({
+    full_name: '',
+    email: '',
+    age: '',
+    contact: '',
+    birthdate: '',
+  });
+
   const [userId, setUserId] = useState(null);
   const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id);
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) return;
 
-      if (user) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        setProfile({
-          full_name: data?.full_name || '',
-          email: user.email || '',
-          age: data?.age || '',
-          contact: data?.contact || '',
-          birthdate: data?.birthdate || '',
-        });
-      }
+      setUserId(user.id);
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      setProfile({
+        full_name: profileData?.full_name || '',
+        email: user.email || '',
+        age: profileData?.age || '',
+        contact: profileData?.contact || '',
+        birthdate: profileData?.birthdate || '',
+      });
     };
+
     fetchData();
   }, []);
 
+  // Function to calculate age from birthdate
+  const calculateAge = (birthdate) => {
+    if (!birthdate) return '';
+    const birthDate = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : '';
+  };
+
   const handleSave = async () => {
-    const { error } = await supabase.from('profiles').upsert([{ id: userId, ...profile }]);
+    if (!userId) {
+      setAlertMessage('❌ User not found. Please log in again.');
+      return;
+    }
+
+    // Calculate age based on birthdate
+    const calculatedAge = calculateAge(profile.birthdate);
+
+    const { error } = await supabase.from('profiles').upsert([
+      {
+        id: userId,
+        full_name: profile.full_name,
+        age: calculatedAge || null, // Use calculated age or null if no birthdate
+        contact: profile.contact || null,
+        birthdate: profile.birthdate || null,
+      },
+    ]);
+
     if (!error) {
       setAlertMessage('✅ Profile updated successfully!');
       setTimeout(() => {
-        navigate('/');
-      }, 1500); // Wait 1.5s before redirect
+        navigate('/profile-summary');
+      }, 1500);
     } else {
       setAlertMessage('❌ Failed to update profile.');
-      console.error("Save error:", error);
+      console.error("Supabase Save Error:", error);
     }
   };
 
@@ -49,14 +92,17 @@ const Profile = () => {
 
   const handleDelete = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (window.confirm('Are you sure you want to delete your account?')) {
+    if (user && window.confirm('Are you sure you want to delete your account?')) {
       await supabase.from('profiles').delete().eq('id', user.id);
-      await supabase.auth.admin.deleteUser(user.id); // Requires admin privileges
+      await supabase.auth.admin.deleteUser(user.id); // Requires service role token
       navigate('/signup');
     }
   };
 
-  const handleChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <>
@@ -72,24 +118,49 @@ const Profile = () => {
           )}
 
           <form className="space-y-4">
-            <input name="full_name" value={profile.full_name} onChange={handleChange} placeholder="Full Name" className="w-full border px-3 py-2 rounded" />
-            <input name="email" value={profile.email} disabled className="w-full border px-3 py-2 rounded bg-gray-100" />
-            <input name="age" value={profile.age} onChange={handleChange} placeholder="Age" className="w-full border px-3 py-2 rounded" />
-            <input name="contact" value={profile.contact} onChange={handleChange} placeholder="Contact Number" className="w-full border px-3 py-2 rounded" />
-            <input name="birthdate" type="date" value={profile.birthdate} onChange={handleChange} className="w-full border px-3 py-2 rounded" />
-            <button type="button" onClick={handleSave} className="w-full bg-[#7c3aed] text-white py-2 rounded hover:bg-[#6d28d9] transition">
+            <input
+              name="full_name"
+              value={profile.full_name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="w-full border px-3 py-2 rounded"
+            />
+            <input
+              name="email"
+              value={profile.email}
+              disabled
+              className="w-full border px-3 py-2 rounded bg-gray-100"
+            />
+            <input
+              name="age"
+              value={calculateAge(profile.birthdate)} // Display calculated age
+              disabled
+              placeholder="Age"
+              className="w-full border px-3 py-2 rounded bg-gray-100"
+              type="number"
+            />
+            <input
+              name="contact"
+              value={profile.contact}
+              onChange={handleChange}
+              placeholder="Contact Number"
+              className="w-full border px-3 py-2 rounded"
+            />
+            <input
+              name="birthdate"
+              type="date"
+              value={profile.birthdate}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              className="w-full bg-[#7c3aed] text-white py-2 rounded hover:bg-[#6d28d9] transition"
+            >
               Save & Continue
             </button>
           </form>
-
-          <div className="flex justify-between mt-6">
-            <button onClick={handleLogout} className="text-sm text-white bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 transition">
-              Logout
-            </button>
-            <button onClick={handleDelete} className="text-sm text-white bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition">
-              Delete Account
-            </button>
-          </div>
         </div>
       </div>
       <Footer />

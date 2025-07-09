@@ -14,8 +14,14 @@ function Login({ isOpen }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (!error) {
+      // 🔐 Mark as logged in before
+      localStorage.setItem('hasLoggedInBefore', 'true');
+
+      // 🔁 Go to Home and refresh to update Header
       navigate('/');
-      window.location.reload(); // refresh header state
+      window.location.reload();
+    } else {
+      alert('Login failed. Please check your credentials.');
     }
   };
 

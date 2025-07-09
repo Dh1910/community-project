@@ -1,23 +1,41 @@
+// src/components/Header.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 function Header() {
   const [session, setSession] = useState(null);
+  const [userProfileExists, setUserProfileExists] = useState(false);
 
   useEffect(() => {
-    // Get current session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const checkAuthAndProfile = async (currentSession) => {
+      setSession(currentSession);
 
-    // Listen to session changes
+      if (currentSession) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single();
+
+        setUserProfileExists(!error && !!data);
+      } else {
+        setUserProfileExists(false);
+      }
+    };
+
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      checkAuthAndProfile(session);
+    };
+    init();
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      checkAuthAndProfile(session);
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      listener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -64,7 +82,17 @@ function Header() {
 
           {/* Auth Buttons / Profile */}
           <div className="flex space-x-3">
-            {!session ? (
+            {session && userProfileExists ? (
+              // ✅ Only show Profile when logged in AND profile exists
+              <Link
+                to="/profile"
+                className="bg-white border border-[#7c3aed] text-[#7c3aed] px-5 py-2 rounded-md 
+                  hover:bg-[#f3e8ff] transition-all duration-300"
+              >
+                Profile
+              </Link>
+            ) : (
+              // ❌ Show Login and Signup when logged out or profile missing
               <>
                 <Link
                   to="/login"
@@ -83,14 +111,6 @@ function Header() {
                   Sign Up
                 </Link>
               </>
-            ) : (
-              <Link
-                to="/profile"
-                className="bg-white border border-[#7c3aed] text-[#7c3aed] px-5 py-2 rounded-md 
-                  hover:bg-[#f3e8ff] transition-all duration-300"
-              >
-                Profile
-              </Link>
             )}
           </div>
         </div>
