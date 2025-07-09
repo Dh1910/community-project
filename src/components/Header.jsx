@@ -87,7 +87,7 @@ function Header() {
             {session && userProfileExists ? (
               <Link
                 to="/profile-summary"
-                className="bg-white border border-[#7c3aed] text-[#7c3aed] px-5 py-2 rounded-md hover:bg-[#f3e8ff]"
+                className="bg-[#7c3aed] border border-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]"
               >
                 Profile
               </Link>
