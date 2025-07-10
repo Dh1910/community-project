@@ -29,14 +29,13 @@ const ProfileSummary = () => {
     fetchUser();
   }, []);
 
-  // 👉 Close dropdown if clicked outside
+  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -52,35 +51,6 @@ const ProfileSummary = () => {
     }
   };
 
-  const handleDelete = async () => {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      console.log("User fetch error or not found:", userError);
-      return;
-    }
-
-    const confirmDelete = window.confirm('Are you sure you want to delete your profile data?');
-    if (!confirmDelete) return;
-
-    try {
-      console.log("Deleting profile data for user:", user.id);
-      const { error: profileDeleteError } = await supabase.from('profiles').delete().eq('id', user.id);
-      if (profileDeleteError) {
-        console.error("Profile delete error:", profileDeleteError);
-        alert('❌ Failed to delete profile data.');
-        return;
-      }
-
-      alert('✅ Profile data deleted successfully. Redirecting to home...');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
-    } catch (error) {
-      console.error("Unexpected error during deletion:", error);
-      alert('❌ An unexpected error occurred. Check console for details.');
-    }
-  };
-
   return (
     <>
       <Header />
@@ -93,16 +63,22 @@ const ProfileSummary = () => {
             <div><strong>Email:</strong> {profile.email}</div>
           </div>
 
-          {/* 3-dot menu */}
+          {/* 3-dot menu without delete option */}
           <div className="absolute top-4 right-4" ref={menuRef}>
             <button onClick={() => setMenuOpen(!menuOpen)} className="text-xl">
               ⋮
             </button>
 
             {menuOpen && (
-              <div className="flex flex-col absolute right-0 top-6 bg-white border shadow rounded text-sm w-40 z-10 text-left">
+              <div className="flex flex-col absolute right-0 top-6 bg-white border shadow rounded text-sm w-40 z-50 text-left">
                 <a href="/profile" className="px-4 py-2 pl-4 hover:bg-gray-100">Edit Profile</a>
-                <button onClick={handleLogout} className="px-4 py-2 pl-4 text-left hover:bg-gray-100">Logout</button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 pl-4 text-left hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+                {/* Delete Account option removed */}
               </div>
             )}
           </div>

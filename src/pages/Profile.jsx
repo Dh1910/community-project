@@ -1,3 +1,4 @@
+// src/pages/Profile.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -13,6 +14,8 @@ const Profile = () => {
     birthdate: '',
   });
 
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
   const [userId, setUserId] = useState(null);
   const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
@@ -42,7 +45,6 @@ const Profile = () => {
     fetchData();
   }, []);
 
-  // Function to calculate age from birthdate
   const calculateAge = (birthdate) => {
     if (!birthdate) return '';
     const birthDate = new Date(birthdate);
@@ -61,18 +63,15 @@ const Profile = () => {
       return;
     }
 
-    // Calculate age based on birthdate
     const calculatedAge = calculateAge(profile.birthdate);
 
-    const { error } = await supabase.from('profiles').upsert([
-      {
-        id: userId,
-        full_name: profile.full_name,
-        age: calculatedAge || null, // Use calculated age or null if no birthdate
-        contact: profile.contact || null,
-        birthdate: profile.birthdate || null,
-      },
-    ]);
+    const { error } = await supabase.from('profiles').upsert([{
+      id: userId,
+      full_name: profile.full_name,
+      age: calculatedAge || null,
+      contact: profile.contact || null,
+      birthdate: profile.birthdate || null,
+    }]);
 
     if (!error) {
       setAlertMessage('✅ Profile updated successfully!');
@@ -104,6 +103,18 @@ const Profile = () => {
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setPasswordMessage('❌ Failed to update password: ' + error.message);
+    } else {
+      setPasswordMessage('✅ Password updated successfully!');
+      setNewPassword('');
+    }
+  };
+
   return (
     <>
       <Header />
@@ -112,9 +123,7 @@ const Profile = () => {
           <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile</h2>
 
           {alertMessage && (
-            <div className="mb-4 text-center text-green-600 font-semibold">
-              {alertMessage}
-            </div>
+            <div className="mb-4 text-center text-green-600 font-semibold">{alertMessage}</div>
           )}
 
           <form className="space-y-4">
@@ -133,7 +142,7 @@ const Profile = () => {
             />
             <input
               name="age"
-              value={calculateAge(profile.birthdate)} // Display calculated age
+              value={calculateAge(profile.birthdate)}
               disabled
               placeholder="Age"
               className="w-full border px-3 py-2 rounded bg-gray-100"
@@ -160,6 +169,29 @@ const Profile = () => {
             >
               Save & Continue
             </button>
+          </form>
+
+          <hr className="my-6 border-gray-300" />
+
+          {/* ✅ Change Password Section */}
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New Password"
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-[#7c3aed] text-white py-2 rounded hover:bg-[#6d28d9] transition"
+            >
+              Update Password
+            </button>
+            {passwordMessage && (
+              <div className="text-center text-sm text-gray-600">{passwordMessage}</div>
+            )}
           </form>
         </div>
       </div>
