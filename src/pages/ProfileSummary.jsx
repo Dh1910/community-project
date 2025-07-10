@@ -17,7 +17,6 @@ const ProfileSummary = () => {
 
       if (error || !user) return;
 
-      // Get profile data
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
