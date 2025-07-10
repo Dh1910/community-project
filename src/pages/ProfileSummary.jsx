@@ -28,28 +28,63 @@ const ProfileSummary = () => {
         full_name: profileData?.full_name || '',
         email: user.email || '',
       });
+    };
+    fetchUser();
+  }, []);
 
-      // Get user posts
-      const { data: userPosts } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+  // 👉 Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
 
-      setPosts(userPosts || []);
-
-      // Get joined communities with names
-      const { data: joined } = await supabase
-        .from('user_communities')
-        .select('community_id, communities(name)')
-        .eq('user_id', user.id);
-
-      const communityNames = joined?.map((c) => c.communities.name) || [];
-      setJoinedCommunities(communityNames);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
     };
 
     fetchProfileData();
   }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout error:", error);
+    } else {
+      window.location.href = '/login';
+    }
+  };
+
+  const handleDelete = async () => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.log("User fetch error or not found:", userError);
+      return;
+    }
+
+    const confirmDelete = window.confirm('Are you sure you want to delete your profile data?');
+    if (!confirmDelete) return;
+
+    try {
+      console.log("Deleting profile data for user:", user.id);
+      const { error: profileDeleteError } = await supabase.from('profiles').delete().eq('id', user.id);
+      if (profileDeleteError) {
+        console.error("Profile delete error:", profileDeleteError);
+        alert('❌ Failed to delete profile data.');
+        return;
+      }
+
+      alert('✅ Profile data deleted successfully. Redirecting to home...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    } catch (error) {
+      console.error("Unexpected error during deletion:", error);
+      alert('❌ An unexpected error occurred. Check console for details.');
+    }
+  };
 
   return (
     <>
@@ -63,39 +98,17 @@ const ProfileSummary = () => {
             <p className="text-md text-gray-600">📧 Email: {profile.email}</p>
           </div>
 
-          {joinedCommunities.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-[#7c3aed] mb-2">🌐 Joined Communities</h3>
-              <ul className="list-disc list-inside text-gray-700">
-                {joinedCommunities.map((name, index) => (
-                  <li key={index}>{name}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* 3-dot menu */}
+          <div className="absolute top-4 right-4" ref={menuRef}>
+            <button onClick={() => setMenuOpen(!menuOpen)} className="text-xl">
+              ⋮
+            </button>
 
-          <hr className="my-6" />
-
-          <h3 className="text-xl font-semibold text-[#7c3aed] mb-4">📝 My Posts</h3>
-          <div className="space-y-6">
-            {posts.length > 0 ? (
-              posts.map((post, i) => (
-                <div key={i} className="bg-gray-50 p-4 rounded shadow-sm">
-                  {post.media_url && (
-                    <img
-                      src={post.media_url}
-                      alt="Post Media"
-                      className="w-full h-60 object-cover rounded mb-3"
-                    />
-                  )}
-                  <p className="text-sm text-gray-800 mb-1">{post.caption}</p>
-                  <p className="text-xs text-gray-500">
-                    📅 {new Date(post.created_at).toLocaleString()}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">You haven't posted anything yet.</p>
+            {menuOpen && (
+              <div className="flex flex-col absolute right-0 top-6 bg-white border shadow rounded text-sm w-40 z-10 text-left">
+                <a href="/profile" className="px-4 py-2 pl-4 hover:bg-gray-100">Edit Profile</a>
+                <button onClick={handleLogout} className="px-4 py-2 pl-4 text-left hover:bg-gray-100">Logout</button>
+              </div>
             )}
           </div>
         </div>

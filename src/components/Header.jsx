@@ -23,7 +23,8 @@ function Header() {
 
         const hasProfile = !error && !!profileData;
         setUserProfileExists(hasProfile);
-
+        console.log(hasProfile)
+        
         if (!hasProfile && location.pathname === '/profile-summary') {
           navigate('/#how-it-works');
         }

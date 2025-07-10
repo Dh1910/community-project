@@ -23,6 +23,7 @@ import FAQ from './pages/FAQ.jsx';
 import Contactus from './pages/Contactus.jsx';
 import Privacy from './pages/Privacy.jsx';
 import TOS from './pages/TOS.jsx';
+import UpdatePassword from './pages/UpdatePassword.jsx';
 
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
@@ -99,8 +100,8 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contactus />} />
         <Route path="/privacy-policy" element={<Privacy />} />
-        <Route path="/terms" element={<TOS/>} />
-
+        <Route path="/terms" element={<TOS />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
       </Routes>
 
 
