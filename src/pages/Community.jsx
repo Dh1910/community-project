@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
@@ -13,6 +13,7 @@ function Community({ openModal, openDiscussionModal }) {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
+  const postSectionRef = useRef(null); // Ref to scroll to post section
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -64,6 +65,14 @@ function Community({ openModal, openDiscussionModal }) {
     }
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (postSectionRef.current) {
+      postSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+    setSearch(''); // Clear search bar after submission
+  };
+
   const combinedPosts = [...allPosts, ...myPosts];
   const uniquePostsMap = new Map();
   combinedPosts.forEach(post => uniquePostsMap.set(post.id, post));
@@ -84,7 +93,9 @@ function Community({ openModal, openDiscussionModal }) {
                 <i className="ri-arrow-left-line mr-2"></i>Back to Skills
               </a>
               <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Hub</h1>
-              <p className="text-lg text-gray-600 mb-8">Connect with fellow learners, share your journey, and join communities.</p>
+              <p className="text-lg text-gray-600 mb-8">
+                Connect with fellow learners, share your journey, and join communities.
+              </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <button
@@ -95,30 +106,25 @@ function Community({ openModal, openDiscussionModal }) {
                 </button>
 
                 <button
-                  onClick={openDiscussionModal}
-                  className="bg-white text-[#7c3aed] border border-[#7c3aed] px-5 py-3 rounded-md hover:bg-[#f3e8ff]"
-                >
-                  <i className="ri-discuss-line mr-2"></i>Start Discussion
-                </button>
-
-                <button
                   onClick={() => navigate('/create-community')}
-                  className="bg-pink-600 text-white px-5 py-3 rounded-md hover:bg-pink-700"
+                  className="bg-[#7c3aed] text-white px-5 py-3 rounded-md hover:bg-[#6b21a8] flex items-center"
                 >
-                  <i className="ri-group-line mr-2"></i>Create Community
+                  <i className="ri-group-line mr-2"></i>+ Create Community
                 </button>
               </div>
             </div>
 
             <div className="w-full md:w-1/2 lg:w-2/5">
               <div className="bg-white rounded-lg shadow-md p-4">
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by skill..."
-                  className="pl-4 pr-4 py-3 w-full rounded-md border border-gray-200 focus:ring-2 focus:ring-primary/20 text-sm"
-                />
+                <form onSubmit={handleSearchSubmit}>
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by skill..."
+                    className="pl-4 pr-4 py-3 w-full rounded-md border border-gray-200 focus:ring-2 focus:ring-primary/20 text-sm"
+                  />
+                </form>
               </div>
             </div>
           </div>
@@ -153,7 +159,7 @@ function Community({ openModal, openDiscussionModal }) {
       </section>
 
       {/* Posts Section */}
-      <section className="bg-gray-50 py-16">
+      <section ref={postSectionRef} className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">
             {search ? `Results for "${search}"` : 'All Skill Posts'}

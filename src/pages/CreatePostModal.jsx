@@ -53,7 +53,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
     } else {
       alert("✅ Post published!");
       onClose(); // Close modal
-      // Optionally clear form
+      // Clear form
       setTitle('');
       setContent('');
       setImageUrl('');
@@ -64,88 +64,93 @@ const CreatePostModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center">
-      <div className="bg-white w-full max-w-lg mx-auto rounded-xl shadow-2xl p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-800 text-2xl"
-        >
-          &times;
-        </button>
-
-        <h2 className="text-xl font-bold text-center mb-6 text-gray-800">
-          📝 Create New Post
-        </h2>
-
-        <div className="mb-4">
-          <label className="text-sm font-medium text-gray-700">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Your post title..."
-            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
-          />
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-800">📝 Create New Post</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-800 text-2xl"
+          >
+            ×
+          </button>
         </div>
 
-        <div className="mb-4">
-          <label className="text-sm font-medium text-gray-700">Content</label>
-          <textarea
-            rows={3}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Share your thoughts..."
-            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none resize-none"
-          ></textarea>
-        </div>
-
-        <div className="mb-4">
-          <label className="text-sm font-medium text-gray-700">Image URL</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="Paste image URL"
-            className="w-full border rounded-lg px-4 py-2 mt-1 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
-          />
-          {imageUrl && (
-            <img
-              src={imageUrl}
-              alt="Preview"
-              className="mt-3 rounded-lg max-h-48 object-cover w-full border"
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Your post title..."
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
             />
-          )}
-        </div>
+          </div>
 
-        <div className="mb-6">
-          <label className="text-sm font-medium text-gray-700">Visibility</label>
-          <div className="flex gap-4 mt-2">
-            <label className="text-sm text-gray-600">
-              <input
-                type="radio"
-                name="visibility"
-                value="public"
-                checked={visibility === 'public'}
-                onChange={() => setVisibility('public')}
-                className="mr-2 accent-violet-600"
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+            <textarea
+              rows={4}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Share your thoughts..."
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none resize-none"
+            ></textarea>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Paste image URL"
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+            />
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt="Preview"
+                className="mt-3 rounded-lg max-h-48 object-cover w-full border"
+                onError={() => alert('Invalid image URL')}
               />
-              Public
-            </label>
-            <label className="text-sm text-gray-600">
-              <input
-                type="radio"
-                name="visibility"
-                value="private"
-                checked={visibility === 'private'}
-                onChange={() => setVisibility('private')}
-                className="mr-2 accent-violet-600"
-              />
-              Private
-            </label>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
+            <div className="flex gap-4">
+              <label className="flex items-center text-sm text-gray-600">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="public"
+                  checked={visibility === 'public'}
+                  onChange={() => setVisibility('public')}
+                  className="mr-2 accent-violet-600"
+                />
+                Public
+              </label>
+              <label className="flex items-center text-sm text-gray-600">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value="private"
+                  checked={visibility === 'private'}
+                  onChange={() => setVisibility('private')}
+                  className="mr-2 accent-violet-600"
+                />
+                Private
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        {/* Sticky Footer with Buttons */}
+        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-white">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100"
