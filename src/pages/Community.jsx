@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -11,13 +12,13 @@ function Community({ openModal, openDiscussionModal }) {
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUser(user);
     };
-
     fetchUser();
   }, []);
 
@@ -84,21 +85,31 @@ function Community({ openModal, openDiscussionModal }) {
               </a>
               <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Hub</h1>
               <p className="text-lg text-gray-600 mb-8">Connect with fellow learners, share your journey, and join communities.</p>
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+
+              <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <button
                   className="bg-[#7c3aed] text-white px-5 py-3 rounded-md hover:bg-[#6b21a8] flex items-center"
                   onClick={openModal}
                 >
                   <img src={customIcon} alt="custom" className="w-5 h-5 mr-2 invert" />Create Post
                 </button>
+
                 <button
                   onClick={openDiscussionModal}
                   className="bg-white text-[#7c3aed] border border-[#7c3aed] px-5 py-3 rounded-md hover:bg-[#f3e8ff]"
                 >
                   <i className="ri-discuss-line mr-2"></i>Start Discussion
                 </button>
+
+                <button
+                  onClick={() => navigate('/create-community')}
+                  className="bg-pink-600 text-white px-5 py-3 rounded-md hover:bg-pink-700"
+                >
+                  <i className="ri-group-line mr-2"></i>Create Community
+                </button>
               </div>
             </div>
+
             <div className="w-full md:w-1/2 lg:w-2/5">
               <div className="bg-white rounded-lg shadow-md p-4">
                 <input

@@ -24,6 +24,8 @@ import Contactus from './pages/Contactus.jsx';
 import Privacy from './pages/Privacy.jsx';
 import TOS from './pages/TOS.jsx';
 import UpdatePassword from './pages/UpdatePassword.jsx';
+import CreateCommunity from './pages/CreateCommunity';
+
 
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
@@ -102,6 +104,7 @@ function App() {
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/terms" element={<TOS />} />
         <Route path="/update-password" element={<UpdatePassword />} />
+        <Route path="/create-community" element={<CreateCommunity />} />
       </Routes>
 
 
