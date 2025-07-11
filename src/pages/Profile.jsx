@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -12,6 +11,7 @@ const Profile = () => {
     age: '',
     contact: '',
     birthdate: '',
+    avatar_url: '', // Store the image URL
   });
 
   const [newPassword, setNewPassword] = useState('');
@@ -39,6 +39,7 @@ const Profile = () => {
         age: profileData?.age || '',
         contact: profileData?.contact || '',
         birthdate: profileData?.birthdate || '',
+        avatar_url: profileData?.avatar_url || '', // Load existing avatar URL
       });
     };
 
@@ -71,6 +72,7 @@ const Profile = () => {
       age: calculatedAge || null,
       contact: profile.contact || null,
       birthdate: profile.birthdate || null,
+      avatar_url: profile.avatar_url || null, // Save the avatar URL
     }]);
 
     if (!error) {
@@ -125,6 +127,24 @@ const Profile = () => {
           {alertMessage && (
             <div className="mb-4 text-center text-green-600 font-semibold">{alertMessage}</div>
           )}
+
+          {/* Profile Image and URL Input */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#7c3aed] mb-4">
+              <img
+                src={profile.avatar_url || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'} // Default avatar
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <input
+              name="avatar_url"
+              value={profile.avatar_url}
+              onChange={handleChange}
+              placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
+              className="w-full border px-3 py-2 rounded"
+            />
+          </div>
 
           <form className="space-y-4">
             <input

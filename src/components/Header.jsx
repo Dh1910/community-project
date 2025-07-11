@@ -1,11 +1,20 @@
-// File: src/components/Header.jsx
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
+// Helper to get initials
+function getInitials(name) {
+  if (!name) return '';
+  const names = name.trim().split(' ');
+  if (names.length === 1) return names[0][0].toUpperCase();
+  return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+}
+
 function Header() {
   const [session, setSession] = useState(null);
   const [userProfileExists, setUserProfileExists] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [fullName, setFullName] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -17,19 +26,25 @@ function Header() {
       if (session?.user?.id) {
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, avatar_url, full_name')
           .eq('id', session.user.id)
           .maybeSingle();
 
         const hasProfile = !error && !!profileData;
         setUserProfileExists(hasProfile);
-        console.log(hasProfile)
-        
+        setAvatarUrl(
+          profileData?.avatar_url ||
+            'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
+        );
+        setFullName(profileData?.full_name || 'User');
+
         if (!hasProfile && location.pathname === '/profile-summary') {
           navigate('/#how-it-works');
         }
       } else {
         setUserProfileExists(false);
+        setAvatarUrl('');
+        setFullName('');
         if (location.pathname === '/profile-summary' || location.pathname === '/profile') {
           navigate('/#how-it-works');
         }
@@ -43,18 +58,25 @@ function Header() {
       if (session?.user?.id) {
         supabase
           .from('profiles')
-          .select('id')
+          .select('id, avatar_url, full_name')
           .eq('id', session.user.id)
           .maybeSingle()
           .then(({ data, error }) => {
             const hasProfile = !error && !!data;
             setUserProfileExists(hasProfile);
+            setAvatarUrl(
+              data?.avatar_url ||
+                'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
+            );
+            setFullName(data?.full_name || 'User');
             if (!hasProfile && (location.pathname === '/profile-summary' || location.pathname === '/profile')) {
               navigate('/#how-it-works');
             }
           });
       } else {
         setUserProfileExists(false);
+        setAvatarUrl('');
+        setFullName('');
         if (location.pathname === '/profile-summary' || location.pathname === '/profile') {
           navigate('/#how-it-works');
         }
@@ -84,18 +106,35 @@ function Header() {
             <Link to="/about" className="text-gray-700 hover:text-[#7c3aed]">About</Link>
           </nav>
 
-          <div className="flex space-x-3">
+          <div className="flex items-center space-x-3">
             {session && userProfileExists ? (
               <Link
                 to="/profile-summary"
-                className="bg-[#7c3aed] border border-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]"
+                className="flex items-center bg-[#7c3aed] border border-[#7c3aed] text-white px-4 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]"
               >
-                Profile
+                <img
+                  src={avatarUrl}
+                  alt="Profile"
+                  className="w-6 h-6 rounded-full object-cover mr-2"
+                />
+                <span className="font-semibold text-sm">
+                  {getInitials(fullName)}
+                </span>
               </Link>
             ) : (
               <>
-                <Link to="/login" className="bg-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]">Log In</Link>
-                <Link to="/signup" className="bg-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]">Sign Up</Link>
+                <Link
+                  to="/login"
+                  className="bg-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-[#7c3aed] text-white px-5 py-2 rounded-md hover:bg-white hover:text-[#7c3aed] hover:border hover:border-[#7c3aed]"
+                >
+                  Sign Up
+                </Link>
               </>
             )}
           </div>

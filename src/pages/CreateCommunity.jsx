@@ -66,7 +66,17 @@ const CreateCommunity = () => {
     <>
       <Header />
       <div className="min-h-screen pt-28 px-4 bg-gray-50 pb-16">
-        <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
+        <div className="max-w-xl mx-auto bg-white p-6 rounded shadow relative">
+
+          {/* ✖ Close button - small, grey, professional */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-5 right-5  text-gray-400 hover:text-gray-600 text-xl font-semibold transition"
+            title="Close"
+          >
+            ×
+          </button>
+
           <h2 className="text-2xl font-bold mb-6 text-center text-[#7c3aed]">
             Create a New Community
           </h2>

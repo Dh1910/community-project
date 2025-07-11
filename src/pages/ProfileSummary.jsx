@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const ProfileSummary = () => {
-  const [profile, setProfile] = useState({ full_name: '', email: '' });
+  const [profile, setProfile] = useState({ full_name: '', email: '', avatar_url: '' });
   const [posts, setPosts] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +24,7 @@ const ProfileSummary = () => {
       setProfile({
         full_name: profileData?.full_name || '',
         email: user.email || '',
+        avatar_url: profileData?.avatar_url || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg',
       });
 
       const { data: userPosts } = await supabase
@@ -45,7 +46,6 @@ const ProfileSummary = () => {
     fetchProfileData();
   }, []);
 
-  // 👉 Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -92,15 +92,30 @@ const ProfileSummary = () => {
         <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow relative">
           <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile Summary</h2>
 
-          <div className="mb-6 space-y-2">
-            <p className="text-lg font-semibold">👤 Full Name: {profile.full_name}</p>
-            <p className="text-md text-gray-600">📧 Email: {profile.email}</p>
-            {joinedCommunities.length > 0 && (
+          {/* Profile Image */}
+          <div className="flex justify-center mb-6">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#7c3aed]">
+              <img
+                src={profile.avatar_url}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Full Name & Email */}
+          <div className="mb-6 text-center space-y-1">
+            <p className="text-xl font-semibold text-[#333]">{profile.full_name}</p>
+            <p className="text-sm text-gray-500">{profile.email}</p>
+          </div>
+
+          {joinedCommunities.length > 0 && (
+            <div className="mb-6 text-center">
               <p className="text-md text-gray-600">
                 🧩 Joined Communities: {joinedCommunities.join(', ')}
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* 3-dot menu */}
           <div className="absolute top-4 right-4" ref={menuRef}>
@@ -115,28 +130,42 @@ const ProfileSummary = () => {
         </div>
 
         {/* User Posts */}
-        <div className="max-w-3xl mx-auto mt-8">
-          <h3 className="text-xl font-semibold mb-4">📌 Your Posts</h3>
+        <div className="max-w-7xl mx-auto mt-10 px-4">
+          <h3 className="text-2xl font-bold mb-6 text-[#7c3aed]">📌 Your Posts</h3>
+
           {posts.length === 0 ? (
             <p className="text-gray-600">You haven't posted anything yet.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map(post => (
-                <div key={post.id} className="bg-white p-4 rounded-lg shadow">
-                  <h4 className="text-lg font-semibold mb-1">{post.caption}</h4>
-                  <p className="text-sm text-gray-700 mb-2">{post.description}</p>
-                  {post.media_url && (
+                <div
+                  key={post.id}
+                  className="bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden"
+                >
+                  {/* Post Image */}
+                  {post.image_url ? (
                     <img
-                      src={post.media_url}
+                      src={post.image_url}
                       alt="Post"
-                      className="w-full h-48 object-cover rounded mb-2"
+                      className="h-48 w-full object-cover"
                     />
+                  ) : (
+                    <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                      No Image
+                    </div>
                   )}
-                  <div className="text-xs text-gray-500">
-                    <p><strong>Skill:</strong> {post.skill}</p>
-                    <p><strong>Mood:</strong> {post.mood}</p>
-                    <p><strong>Duration:</strong> {post.duration}</p>
-                    <p>{new Date(post.created_at).toLocaleString()}</p>
+
+                  {/* Post Content */}
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-1">{post.caption}</h4>
+                    <p className="text-sm text-gray-600 flex-grow">{post.description}</p>
+
+                    <div className="mt-3 text-xs text-gray-500 space-y-1">
+                      <p><strong>Skill:</strong> {post.skill}</p>
+                      <p><strong>Mood:</strong> {post.mood}</p>
+                      <p><strong>Duration:</strong> {post.duration}</p>
+                      <p><strong>Posted:</strong> {new Date(post.created_at).toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
               ))}
