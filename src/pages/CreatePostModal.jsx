@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-const CreatePostModal = ({ isOpen, onClose }) => {
+const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [visibility, setVisibility] = useState('public');
   const [userId, setUserId] = useState(null);
+  const [skill, setSkill] = useState('');
+  const [mood, setMood] = useState('');
+  const [duration, setDuration] = useState('');
 
   useEffect(() => {
-    // Prevent background scroll
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
     return () => {
       document.body.style.overflow = 'auto';
@@ -18,7 +20,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
@@ -26,38 +28,62 @@ const CreatePostModal = ({ isOpen, onClose }) => {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    if (existingPost) {
+      setTitle(existingPost.title);
+      setContent(existingPost.content);
+      setImageUrl(existingPost.image_url || '');
+      setSkill(existingPost.skill);
+      setMood(existingPost.mood);
+      setDuration(existingPost.duration);
+      setVisibility(existingPost.visibility || 'public');
+    } else {
+      setTitle('');
+      setContent('');
+      setImageUrl('');
+      setVisibility('public');
+      setSkill('');
+      setMood('');
+      setDuration('');
+    }
+  }, [existingPost]);
+
   const handlePublish = async () => {
     if (!userId) {
       alert("User not found. Please log in.");
       return;
     }
 
-    if (!title || !content) {
-      alert("Title and content are required.");
+    if (!title || !content || !skill || !mood || !duration) {
+      alert("All fields including skill, mood, and duration are required.");
       return;
     }
 
-    const { error } = await supabase.from('posts').insert([
-      {
-        user_id: userId,
-        title,
-        content,
-        image_url: imageUrl,
-        visibility,
-        created_at: new Date().toISOString()
-      }
-    ]);
+    const postData = {
+      user_id: userId,
+      title,
+      content,
+      image_url: imageUrl,
+      visibility,
+      skill,
+      mood,
+      duration,
+      created_at: new Date().toISOString()
+    };
 
-    if (error) {
-      alert("Failed to publish post: " + error.message);
+    let result;
+    if (existingPost) {
+      result = await supabase.from('posts').update(postData).eq('id', existingPost.id).select('*').single();
     } else {
-      alert("✅ Post published!");
-      onClose(); // Close modal
-      // Clear form
-      setTitle('');
-      setContent('');
-      setImageUrl('');
-      setVisibility('public');
+      result = await supabase.from('posts').insert([postData]).select('*').single();
+    }
+
+    if (result.error) {
+      alert("Failed to publish post: " + result.error.message);
+    } else {
+      alert(existingPost ? "✅ Post updated!" : "✅ Post published!");
+      onClose();
+      if (onPostUpdated) onPostUpdated(result.data);
     }
   };
 
@@ -66,18 +92,11 @@ const CreatePostModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">📝 Create New Post</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-800 text-2xl"
-          >
-            ×
-          </button>
+          <h2 className="text-xl font-bold text-gray-800">📝 {existingPost ? 'Edit Post' : 'Create New Post'}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-2xl">×</button>
         </div>
 
-        {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -99,6 +118,53 @@ const CreatePostModal = ({ isOpen, onClose }) => {
               placeholder="Share your thoughts..."
               className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none resize-none"
             ></textarea>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Skill</label>
+            <select
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+            >
+              <option value="">Select a skill</option>
+              <option value="Cooking">Cooking</option>
+              <option value="Design">Design</option>
+              <option value="Photography">Photography</option>
+              <option value="Music">Music</option>
+              <option value="Fitness">Fitness</option>
+              <option value="Coding">Coding</option>
+              <option value="Languages">Languages</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mood</label>
+            <select
+              value={mood}
+              onChange={(e) => setMood(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+            >
+              <option value="">Select mood</option>
+              <option value="Motivated">Motivated</option>
+              <option value="Focused">Focused</option>
+              <option value="Tired">Tired</option>
+              <option value="Excited">Excited</option>
+              <option value="Calm">Calm</option>
+              <option value="Confused">Confused</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (in minutes)</label>
+            <input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="How long did you practice?"
+              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+              min="1"
+            />
           </div>
 
           <div className="mb-4">
@@ -149,7 +215,6 @@ const CreatePostModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Sticky Footer with Buttons */}
         <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-white">
           <button
             onClick={onClose}
@@ -161,7 +226,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
             onClick={handlePublish}
             className="px-4 py-2 text-sm font-medium rounded-md bg-violet-600 text-white hover:bg-violet-700"
           >
-            Publish
+            {existingPost ? 'Update' : 'Publish'}
           </button>
         </div>
       </div>

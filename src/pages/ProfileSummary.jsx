@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -9,6 +10,7 @@ const ProfileSummary = () => {
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -63,28 +65,6 @@ const ProfileSummary = () => {
     if (!error) window.location.href = '/login';
   };
 
-  const handleDelete = async () => {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return;
-
-    if (!window.confirm('Are you sure you want to delete your profile data?')) return;
-
-    const { error: profileDeleteError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', user.id);
-
-    if (profileDeleteError) {
-      alert('❌ Failed to delete profile data.');
-      return;
-    }
-
-    alert('✅ Profile deleted.');
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 1000);
-  };
-
   return (
     <>
       <Header />
@@ -117,7 +97,7 @@ const ProfileSummary = () => {
             </div>
           )}
 
-          {/* 3-dot menu */}
+          {/* 3-dot menu for Profile */}
           <div className="absolute top-4 right-4" ref={menuRef}>
             <button onClick={() => setMenuOpen(!menuOpen)} className="text-xl">⋮</button>
             {menuOpen && (
@@ -140,8 +120,21 @@ const ProfileSummary = () => {
               {posts.map(post => (
                 <div
                   key={post.id}
-                  className="bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden relative"
                 >
+                  {/* Top bar with avatar and menu */}
+                  <div className="flex justify-between items-center p-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={profile.avatar_url}
+                        alt="User"
+                        className="w-10 h-10 rounded-full object-cover border"
+                      />
+                      <span className="font-medium text-gray-700">{profile.full_name}</span>
+                    </div>
+                    <PostMenu post={post} />
+                  </div>
+
                   {/* Post Image */}
                   {post.image_url ? (
                     <img
@@ -179,3 +172,66 @@ const ProfileSummary = () => {
 };
 
 export default ProfileSummary;
+
+// ✅ Post Menu Component with Edit Navigation
+const PostMenu = ({ post }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this post?");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    if (error) {
+      alert("❌ Failed to delete post.");
+    } else {
+      alert("✅ Post deleted.");
+      window.location.reload();
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-xl text-gray-600"
+      >
+        ⋮
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-md z-10">
+          <button
+            onClick={() => navigate('/create-post', { state: { postData: post } })}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Edit Post
+          </button>
+          <button
+            onClick={handleDelete}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Delete Post
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
