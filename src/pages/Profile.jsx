@@ -11,7 +11,7 @@ const Profile = () => {
     age: '',
     contact: '',
     birthdate: '',
-    avatar_url: '', // Store the image URL
+    avatar_url: '',
   });
 
   const [newPassword, setNewPassword] = useState('');
@@ -39,7 +39,7 @@ const Profile = () => {
         age: profileData?.age || '',
         contact: profileData?.contact || '',
         birthdate: profileData?.birthdate || '',
-        avatar_url: profileData?.avatar_url || '', // Load existing avatar URL
+        avatar_url: profileData?.avatar_url || '',
       });
     };
 
@@ -72,7 +72,7 @@ const Profile = () => {
       age: calculatedAge || null,
       contact: profile.contact || null,
       birthdate: profile.birthdate || null,
-      avatar_url: profile.avatar_url || null, // Save the avatar URL
+      avatar_url: profile.avatar_url || null,
     }]);
 
     if (!error) {
@@ -86,20 +86,6 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  };
-
-  const handleDelete = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && window.confirm('Are you sure you want to delete your account?')) {
-      await supabase.from('profiles').delete().eq('id', user.id);
-      await supabase.auth.admin.deleteUser(user.id); // Requires service role token
-      navigate('/signup');
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
@@ -110,11 +96,13 @@ const Profile = () => {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
 
     if (error) {
-      setPasswordMessage('❌ Failed to update password: ' + error.message);
+      setPasswordMessage('❌ ' + error.message);
     } else {
       setPasswordMessage('✅ Password updated successfully!');
       setNewPassword('');
     }
+
+    setTimeout(() => setPasswordMessage(''), 3000);
   };
 
   return (
@@ -125,14 +113,18 @@ const Profile = () => {
           <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile</h2>
 
           {alertMessage && (
-            <div className="mb-4 text-center text-green-600 font-semibold">{alertMessage}</div>
+            <div className={`mb-4 text-center px-4 py-2 rounded font-medium ${
+              alertMessage.startsWith('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}>
+              {alertMessage}
+            </div>
           )}
 
           {/* Profile Image and URL Input */}
           <div className="flex flex-col items-center mb-6">
             <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#7c3aed] mb-4">
               <img
-                src={profile.avatar_url || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'} // Default avatar
+                src={profile.avatar_url || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -141,8 +133,8 @@ const Profile = () => {
               name="avatar_url"
               value={profile.avatar_url}
               onChange={handleChange}
-              placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
-              className="w-full border px-3 py-2 rounded"
+              placeholder="Image URL (e.g., https://...)"
+              className="w-full border px-3 py-2 rounded text-sm"
             />
           </div>
 
@@ -191,10 +183,11 @@ const Profile = () => {
             </button>
           </form>
 
-          <hr className="my-6 border-gray-300" />
+          <hr className="my-6 border-gray-200" />
 
-          {/* ✅ Change Password Section */}
+          {/* Password Change Section */}
           <form onSubmit={handlePasswordChange} className="space-y-4">
+            <h3 className="text-lg font-semibold text-[#7c3aed]">Change Password</h3>
             <input
               type="password"
               value={newPassword}
@@ -210,7 +203,11 @@ const Profile = () => {
               Update Password
             </button>
             {passwordMessage && (
-              <div className="text-center text-sm text-gray-600">{passwordMessage}</div>
+              <div className={`text-center text-sm font-medium ${
+                passwordMessage.startsWith('✅') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {passwordMessage}
+              </div>
             )}
           </form>
         </div>

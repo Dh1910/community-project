@@ -3,17 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CreatePostModal from './CreatePostModal'; // ✅ Import Modal
 import customIcon from '../assets/icons/custom.png';
 
-function Community({ openModal, openDiscussionModal }) {
+function Community() {
   const [allPosts, setAllPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [communities, setCommunities] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false); // ✅ modal state
   const navigate = useNavigate();
-  const postSectionRef = useRef(null); // Ref to scroll to post section
+  const postSectionRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -70,7 +72,7 @@ function Community({ openModal, openDiscussionModal }) {
     if (postSectionRef.current) {
       postSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-    setSearch(''); // Clear search bar after submission
+    setSearch('');
   };
 
   const combinedPosts = [...allPosts, ...myPosts];
@@ -100,9 +102,10 @@ function Community({ openModal, openDiscussionModal }) {
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <button
                   className="bg-[#7c3aed] text-white px-5 py-3 rounded-md hover:bg-[#6b21a8] flex items-center"
-                  onClick={openModal}
+                  onClick={() => setIsPostModalOpen(true)} // ✅ Open modal
                 >
-                  <img src={customIcon} alt="custom" className="w-5 h-5 mr-2 invert" />Create Post
+                  <img src={customIcon} alt="custom" className="w-5 h-5 mr-2 invert" />
+                  Create Post
                 </button>
 
                 <button
@@ -205,6 +208,11 @@ function Community({ openModal, openDiscussionModal }) {
           </a>
         </div>
       </section>
+
+      {/* ✅ Render Modal if open */}
+      {isPostModalOpen && (
+        <CreatePostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />
+      )}
 
       <Footer />
     </>

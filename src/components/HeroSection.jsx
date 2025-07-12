@@ -27,7 +27,7 @@ function HeroSection() {
 
   const handleButtonClick = () => {
     if (isLoggedIn) {
-      navigate("/dashboard"); // ✅ redirect logged-in users
+      navigate("/login"); // ✅ redirect logged-in users
     } else {
       navigate("/signup"); // ✅ redirect new users
     }
