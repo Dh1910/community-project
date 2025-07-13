@@ -36,6 +36,8 @@ import Language from './pages/SkillPages/Language.jsx';
 import Painting from './pages/SkillPages/Painting.jsx';
 import Photography from './pages/SkillPages/Photography.jsx';
 
+import Inbox from './pages/Inbox';
+
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
     <>
@@ -82,6 +84,8 @@ function App() {
         <Route path="/skill/language" element={<Language />} />
         <Route path="/skill/painting" element={<Painting />} />
         <Route path="/skill/photography" element={<Photography />} />
+
+        <Route path="/inbox" element={<Inbox />} />
       </Routes>
     </Router>
   );

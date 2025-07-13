@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import PostProjectModal from '../pages/SkillPages/PostProjectModal';
 
 const ProfileSummary = () => {
   const [profile, setProfile] = useState({ full_name: '', email: '', avatar_url: '' });
@@ -11,6 +12,9 @@ const ProfileSummary = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+  const [editingProject, setEditingProject] = useState(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -43,6 +47,13 @@ const ProfileSummary = () => {
         .eq('user_id', user.id);
 
       setJoinedCommunities(joined?.map(j => j.communities?.name) || []);
+
+      const { data: userProjects } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('creator_id', user.id);
+
+      setProjects(userProjects || []);
     };
 
     fetchProfileData();
@@ -65,6 +76,29 @@ const ProfileSummary = () => {
     if (!error) window.location.href = '/login';
   };
 
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setIsProjectModalOpen(true);
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this project?');
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    if (error) {
+      alert('❌ Failed to delete the project.');
+      console.error(error);
+    } else {
+      alert('✅ Project deleted successfully.');
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+    }
+  };
+
   return (
     <>
       <Header />
@@ -72,7 +106,6 @@ const ProfileSummary = () => {
         <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow relative">
           <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile Summary</h2>
 
-          {/* Profile Image */}
           <div className="flex justify-center mb-6">
             <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#7c3aed]">
               <img
@@ -83,7 +116,6 @@ const ProfileSummary = () => {
             </div>
           </div>
 
-          {/* Full Name & Email */}
           <div className="mb-6 text-center space-y-1">
             <p className="text-xl font-semibold text-[#333]">{profile.full_name}</p>
             <p className="text-sm text-gray-500">{profile.email}</p>
@@ -97,7 +129,6 @@ const ProfileSummary = () => {
             </div>
           )}
 
-          {/* 3-dot menu for Profile */}
           <div className="absolute top-4 right-4" ref={menuRef}>
             <button onClick={() => setMenuOpen(!menuOpen)} className="text-xl">⋮</button>
             {menuOpen && (
@@ -109,7 +140,6 @@ const ProfileSummary = () => {
           </div>
         </div>
 
-        {/* User Posts */}
         <div className="max-w-7xl mx-auto mt-10 px-4">
           <h3 className="text-2xl font-bold mb-6 text-[#7c3aed]">📌 Your Posts</h3>
 
@@ -118,47 +148,54 @@ const ProfileSummary = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map(post => (
-                <div
-                  key={post.id}
-                  className="bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden relative"
-                >
-                  {/* Top bar with avatar and menu */}
-                  <div className="flex justify-between items-center p-3">
+                <div key={post.id} className="bg-white border rounded-xl shadow p-3">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={profile.avatar_url}
-                        alt="User"
-                        className="w-10 h-10 rounded-full object-cover border"
-                      />
-                      <span className="font-medium text-gray-700">{profile.full_name}</span>
+                      <img src={profile.avatar_url} className="w-8 h-8 rounded-full" alt="Avatar" />
+                      <span className="font-medium">{profile.full_name}</span>
                     </div>
                     <PostMenu post={post} />
                   </div>
-
-                  {/* Post Image */}
                   {post.image_url ? (
-                    <img
-                      src={post.image_url}
-                      alt="Post"
-                      className="h-48 w-full object-cover"
-                    />
+                    <img src={post.image_url} alt="Post" className="mt-2 h-40 w-full object-cover rounded" />
                   ) : (
-                    <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-                      No Image
-                    </div>
+                    <div className="h-40 flex items-center justify-center bg-gray-100 text-gray-400">No Image</div>
                   )}
+                  <h4 className="mt-3 text-lg font-semibold">{post.caption}</h4>
+                  <p className="text-sm text-gray-600">{post.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-                  {/* Post Content */}
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-1">{post.caption}</h4>
-                    <p className="text-sm text-gray-600 flex-grow">{post.description}</p>
+        <div className="max-w-7xl mx-auto mt-16 px-4">
+          <h3 className="text-2xl font-bold mb-6 text-[#7c3aed]">📦 My Projects</h3>
 
-                    <div className="mt-3 text-xs text-gray-500 space-y-1">
-                      <p><strong>Skill:</strong> {post.skill}</p>
-                      <p><strong>Mood:</strong> {post.mood}</p>
-                      <p><strong>Duration:</strong> {post.duration}</p>
-                      <p><strong>Posted:</strong> {new Date(post.created_at).toLocaleString()}</p>
-                    </div>
+          {projects.length === 0 ? (
+            <p className="text-gray-600">You haven’t posted any projects yet.</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map(project => (
+                <div key={project.id} className="bg-white rounded-xl p-4 shadow relative">
+                  <h4 className="text-lg font-semibold text-indigo-700 mb-1">{project.title}</h4>
+                  <p className="text-sm text-gray-700 mb-2">{project.description}</p>
+                  <p className="text-sm text-gray-600 mb-1">🔧 Skill: {project.skill}</p>
+                  <p className="text-xs text-gray-500">Posted: {new Date(project.created_at).toLocaleString()}</p>
+
+                  <div className="absolute top-3 right-3 space-x-2 flex">
+                    <button
+                      onClick={() => handleEditProject(project)}
+                      className="text-sm text-indigo-600 hover:underline"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProject(project.id)}
+                      className="text-sm text-red-500 hover:underline"
+                    >
+                      🗑 Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -166,6 +203,16 @@ const ProfileSummary = () => {
           )}
         </div>
       </div>
+
+      <PostProjectModal
+        isOpen={isProjectModalOpen}
+        onClose={() => {
+          setIsProjectModalOpen(false);
+          setEditingProject(null);
+        }}
+        onProjectPosted={() => window.location.reload()}
+        existingProject={editingProject}
+      />
       <Footer />
     </>
   );
@@ -173,7 +220,6 @@ const ProfileSummary = () => {
 
 export default ProfileSummary;
 
-// ✅ Post Menu Component with Edit Navigation
 const PostMenu = ({ post }) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -185,6 +231,7 @@ const PostMenu = ({ post }) => {
 
     const { error } = await supabase.from('posts').delete().eq('id', post.id);
     if (error) {
+      console.error('Delete error:', error);
       alert("❌ Failed to delete post.");
     } else {
       alert("✅ Post deleted.");
@@ -210,12 +257,7 @@ const PostMenu = ({ post }) => {
 
   return (
     <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="text-xl text-gray-600"
-      >
-        ⋮
-      </button>
+      <button onClick={() => setOpen(!open)} className="text-xl text-gray-600">⋮</button>
       {open && (
         <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-md z-10">
           <button

@@ -6,8 +6,9 @@ import { supabase } from '../supabaseClient';
 function getInitials(name) {
   if (!name) return '';
   const names = name.trim().split(' ');
-  if (names.length === 1) return names[0][0].toUpperCase();
-  return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  return names.length === 1
+    ? names[0][0].toUpperCase()
+    : (names[0][0] + names[names.length - 1][0]).toUpperCase();
 }
 
 function Header() {
@@ -15,6 +16,7 @@ function Header() {
   const [userProfileExists, setUserProfileExists] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [fullName, setFullName] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,17 +36,30 @@ function Header() {
         setUserProfileExists(hasProfile);
         setAvatarUrl(
           profileData?.avatar_url ||
-            'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
+          'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
         );
         setFullName(profileData?.full_name || 'User');
 
         if (!hasProfile && location.pathname === '/profile-summary') {
           navigate('/#how-it-works');
         }
+
+        // Fetch unread message count
+        const { data: unreadMessages } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('receiver_id', session.user.id)
+          .is('is_read', false);
+
+        if (unreadMessages) {
+          setUnreadCount(unreadMessages.length);
+        }
       } else {
         setUserProfileExists(false);
         setAvatarUrl('');
         setFullName('');
+        setUnreadCount(0);
+
         if (location.pathname === '/profile-summary' || location.pathname === '/profile') {
           navigate('/#how-it-works');
         }
@@ -55,32 +70,7 @@ function Header() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session?.user?.id) {
-        supabase
-          .from('profiles')
-          .select('id, avatar_url, full_name')
-          .eq('id', session.user.id)
-          .maybeSingle()
-          .then(({ data, error }) => {
-            const hasProfile = !error && !!data;
-            setUserProfileExists(hasProfile);
-            setAvatarUrl(
-              data?.avatar_url ||
-                'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'
-            );
-            setFullName(data?.full_name || 'User');
-            if (!hasProfile && (location.pathname === '/profile-summary' || location.pathname === '/profile')) {
-              navigate('/#how-it-works');
-            }
-          });
-      } else {
-        setUserProfileExists(false);
-        setAvatarUrl('');
-        setFullName('');
-        if (location.pathname === '/profile-summary' || location.pathname === '/profile') {
-          navigate('/#how-it-works');
-        }
-      }
+      fetchSessionAndProfile();
     });
 
     return () => {
@@ -104,6 +94,16 @@ function Header() {
             <Link to="/explore" className="text-gray-700 hover:text-[#7c3aed]">Explore Skills</Link>
             <Link to="/community" className="text-gray-700 hover:text-[#7c3aed]">Community</Link>
             <Link to="/about" className="text-gray-700 hover:text-[#7c3aed]">About</Link>
+            {session && userProfileExists && (
+              <Link to="/inbox" className="relative text-gray-700 hover:text-[#7c3aed]">
+                📬 Inbox
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white rounded-full text-xs px-1.5">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center space-x-3">

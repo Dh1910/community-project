@@ -20,7 +20,7 @@ const Signup = ({ isOpen, onClose }) => {
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    // Signup with Supabase Auth
+    // Step 1: Signup via Supabase Auth
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
@@ -33,31 +33,34 @@ const Signup = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Insert profile with name and email
+    // Step 2: Add user to 'profiles' table
     const userId = data?.user?.id;
     if (userId) {
       const { error: profileError } = await supabase.from('profiles').upsert([
         {
-          id: userId,
+          id: userId, 
+          user_id: userId, // ✅ This becomes foreign key
           full_name: name,
-          email: email, // ✅ Save email to Supabase profiles table
+          email: email,
         },
       ]);
 
       if (profileError) {
         setErrorMsg('Profile creation failed: ' + profileError.message);
-      } else {
-        setSuccessMsg('✅ Signup successful. Please log in.');
-        setTimeout(() => {
-          navigate('/login');
-        }, 1500);
+        setIsSubmitting(false);
+        return;
       }
+
+      setSuccessMsg('✅ Signup successful. Please log in.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
     }
 
     setIsSubmitting(false);
   };
 
-  // Full Page Render
+  // 👉 Full Page Render (if `isOpen` is undefined)
   if (isOpen === undefined) {
     return (
       <>
@@ -93,7 +96,7 @@ const Signup = ({ isOpen, onClose }) => {
     );
   }
 
-  // Modal Render
+  // 👉 Modal Render
   if (!isOpen) return null;
 
   return (
