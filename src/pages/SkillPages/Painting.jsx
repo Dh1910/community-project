@@ -1,68 +1,137 @@
+import React, { useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { Link } from 'react-router-dom';
 
-
-function Painting() {
-  const [posts, setPosts] = useState([]);
-
+const Painting = () => {
   useEffect(() => {
-    const fetchPaintingPosts = async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('skill', 'Painting')
-        .order('created_at', { ascending: false });
-
-      if (!error) setPosts(data || []);
-    };
-
-    fetchPaintingPosts();
+    window.scrollTo(0, 0);
   }, []);
 
   return (
     <>
       <Header />
-      <div className="min-h-screen pt-28 px-4 pb-16 bg-yellow-50">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-yellow-600 mb-4">🎨 Explore Creative Paintings</h1>
-          <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10">
-            Share and get inspired by colorful artwork and painting projects from fellow creators.
-          </p>
 
-          {posts.length === 0 ? (
-            <p className="text-center text-gray-500">No painting posts available yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition"
-                >
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">{post.caption}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{post.description}</p>
-                  {post.image_url && (
-                    <img
-                      src={post.image_url}
-                      alt="Painting Post"
-                      className="w-full h-48 object-cover rounded mt-2"
-                    />
-                  )}
-                  <div className="text-xs text-gray-500 mt-3">
-                    <p><strong>Mood:</strong> {post.mood}</p>
-                    <p><strong>Duration:</strong> {post.duration}</p>
-                    <p><strong>Posted:</strong> {new Date(post.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Hero Section */}
+      <section className="pt-28 pb-20 bg-gradient-to-r from-pink-50 to-purple-100 text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h1 className="text-5xl font-extrabold text-purple-700 mb-6">Express Yourself Through Painting</h1>
+          <p className="text-lg text-gray-700 mb-8">
+            Unleash your creativity and bring color to your world. Learn techniques, styles, and grow your skills brush by brush.
+          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Why Learn Painting */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Learn Painting?</h2>
+            <p className="text-gray-600 mb-4">
+              Painting helps relieve stress, enhances focus, and allows personal expression like no other art form.
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-2">
+              <li>Discover your unique style</li>
+              <li>Practice mindfulness through brushwork</li>
+              <li>Create beautiful art for yourself or others</li>
+              <li>Build a portfolio or decorate your space</li>
+            </ul>
+          </div>
+          <div>
+            <img
+              src="https://cdn.pixabay.com/photo/2017/08/01/08/29/art-2569234_1280.jpg"
+              alt="Painting"
+              className="rounded-xl shadow-lg"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Step by Step Roadmap */}
+      <section className="bg-purple-50 py-16">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-purple-800 mb-10">Step-by-Step Learning Path</h2>
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            {[
+              {
+                title: 'Step 1: Choose Your Medium',
+                description: 'Decide between watercolor, acrylics, oils, or digital painting to begin.',
+              },
+              {
+                title: 'Step 2: Basic Techniques',
+                description: 'Learn brush types, color theory, shading, and blending basics.',
+              },
+              {
+                title: 'Step 3: Recreate Masterpieces',
+                description: 'Practice by replicating famous artworks to sharpen your control.',
+              },
+              {
+                title: 'Step 4: Paint Your Own Ideas',
+                description: 'Start creating original pieces from imagination or reference.',
+              },
+              {
+                title: 'Step 5: Share Your Art',
+                description: 'Post progress and finished paintings to get feedback and motivation.',
+              },
+              {
+                title: 'Step 6: Exhibit or Sell',
+                description: 'Participate in online exhibitions or list your art for sale.',
+              },
+            ].map((step, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                <h3 className="text-xl font-semibold text-purple-700 mb-2">{step.title}</h3>
+                <p className="text-gray-700">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="bg-white py-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-10">What Artists Say</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Neha Kapoor',
+                quote: 'I never thought I could paint. But step-by-step guidance made me fall in love with it!',
+              },
+              {
+                name: 'Siddharth Mehra',
+                quote: 'I painted my first landscape within a week of joining. It’s been therapeutic.',
+              },
+              {
+                name: 'Isha Verma',
+                quote: 'Sharing my artwork and getting feedback helped me grow faster than ever.',
+              },
+            ].map((t, idx) => (
+              <div key={idx} className="bg-purple-50 p-6 rounded-lg shadow-md">
+                <p className="italic text-gray-700 mb-4">"{t.quote}"</p>
+                <h4 className="text-lg font-semibold text-purple-800">{t.name}</h4>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-center py-16">
+        <h2 className="text-3xl font-bold mb-4">Begin Your Painting Journey</h2>
+        <p className="mb-6 max-w-xl mx-auto">
+          Whether it’s watercolors or oils, we’re here to help you develop your art and confidence.
+        </p>
+        <Link
+          to="/signup"
+          className="bg-white text-purple-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100 transition"
+        >
+          Get Started
+        </Link>
+      </section>
+
       <Footer />
     </>
   );
-}
+};
 
 export default Painting;

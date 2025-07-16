@@ -24,7 +24,7 @@ function Skills() {
 
   const handleClick = (skillName) => {
     if (skillName === 'Custom Skill') {
-      navigate('/create-custom-skill');
+      navigate('/skill/custom'); // ✅ Corrected route for CustomSkill.jsx
     } else {
       navigate(`/skill/${skillName.toLowerCase()}`);
     }

@@ -1,68 +1,132 @@
+import React, { useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { Link } from 'react-router-dom';
 
-
-function Fitness() {
-  const [posts, setPosts] = useState([]);
-
+const Fitness = () => {
   useEffect(() => {
-    const fetchFitnessPosts = async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('skill', 'Fitness')
-        .order('created_at', { ascending: false });
-
-      if (!error) setPosts(data || []);
-    };
-
-    fetchFitnessPosts();
+    window.scrollTo(0, 0);
   }, []);
 
   return (
     <>
       <Header />
-      <div className="min-h-screen pt-28 px-4 pb-16 bg-green-50">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-green-600 mb-4">💪 Stay Fit with the Community</h1>
-          <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10">
-            Share your workouts, progress, and fitness journey with other enthusiasts.
-          </p>
 
-          {posts.length === 0 ? (
-            <p className="text-center text-gray-500">No fitness posts available yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-white p-5 rounded-xl shadow border border-gray-100 hover:shadow-md transition"
-                >
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">{post.caption}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{post.description}</p>
-                  {post.image_url && (
-                    <img
-                      src={post.image_url}
-                      alt="Fitness Post"
-                      className="w-full h-48 object-cover rounded mt-2"
-                    />
-                  )}
-                  <div className="text-xs text-gray-500 mt-3">
-                    <p><strong>Mood:</strong> {post.mood}</p>
-                    <p><strong>Duration:</strong> {post.duration}</p>
-                    <p><strong>Posted:</strong> {new Date(post.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      <section className="pt-28 pb-20 bg-gradient-to-r from-green-50 to-green-100 text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <h1 className="text-5xl font-extrabold text-green-700 mb-6">Transform Your Fitness Journey</h1>
+          <p className="text-lg text-gray-700 mb-8">
+            Build strength, improve endurance, and feel better every day. Start where you are and grow at your pace.
+          </p>
         </div>
-      </div>
+      </section>
+
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Get Fit?</h2>
+            <p className="text-gray-600 mb-4">
+              Fitness improves your physical and mental health, confidence, and energy for daily life.
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-2">
+              <li>Boost strength and stamina</li>
+              <li>Reduce stress and improve sleep</li>
+              <li>Enhance posture and mobility</li>
+              <li>Feel more energized and focused</li>
+            </ul>
+          </div>
+          <div>
+            <img
+              src="https://cdn.pixabay.com/photo/2016/03/27/22/16/sport-1284656_1280.jpg"
+              alt="Fitness"
+              className="rounded-xl shadow-lg"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-green-50 py-16">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-green-800 mb-10">Step-by-Step Fitness Plan</h2>
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            {[
+              {
+                title: 'Step 1: Set Your Goal',
+                description: 'Decide whether you want to lose weight, gain muscle, or improve endurance.',
+              },
+              {
+                title: 'Step 2: Build a Routine',
+                description: 'Plan workouts that include strength, cardio, flexibility, and recovery.',
+              },
+              {
+                title: 'Step 3: Track Progress',
+                description: 'Record your reps, sets, distance, or weight changes weekly.',
+              },
+              {
+                title: 'Step 4: Eat for Performance',
+                description: 'Focus on balanced meals with proteins, carbs, and fats.',
+              },
+              {
+                title: 'Step 5: Rest & Recover',
+                description: 'Get 7–9 hours of sleep and schedule rest days to rebuild.',
+              },
+              {
+                title: 'Step 6: Stay Motivated',
+                description: 'Join challenges, follow trainers, and reward yourself for consistency.',
+              },
+            ].map((step, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                <h3 className="text-xl font-semibold text-green-700 mb-2">{step.title}</h3>
+                <p className="text-gray-700">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-10">What Fit Learners Say</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Aditya Singh',
+                quote: 'This platform helped me stay committed. I feel stronger and happier every week.',
+              },
+              {
+                name: 'Sneha Mehta',
+                quote: 'I finally stuck to a fitness plan thanks to the community and tracking system.',
+              },
+              {
+                name: 'Mohit Rao',
+                quote: 'Every step was clear, and now I enjoy working out more than ever!',
+              },
+            ].map((t, idx) => (
+              <div key={idx} className="bg-green-100 p-6 rounded-lg shadow-md">
+                <p className="italic text-gray-700 mb-4">"{t.quote}"</p>
+                <h4 className="text-lg font-semibold text-green-800">{t.name}</h4>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gradient-to-r from-green-600 to-green-400 text-white text-center py-16">
+        <h2 className="text-3xl font-bold mb-4">Start Your Fitness Journey</h2>
+        <p className="mb-6 max-w-xl mx-auto">
+          Build healthy habits, track your progress, and transform your lifestyle starting today.
+        </p>
+        <Link
+          to="/signup"
+          className="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100 transition"
+        >
+          Get Started
+        </Link>
+      </section>
+
       <Footer />
     </>
   );
-}
+};
 
 export default Fitness;

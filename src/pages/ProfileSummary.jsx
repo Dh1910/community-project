@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import PostProjectModal from '../pages/SkillPages/PostProjectModal';
 
 const ProfileSummary = () => {
   const [profile, setProfile] = useState({ full_name: '', email: '', avatar_url: '' });
@@ -13,8 +12,6 @@ const ProfileSummary = () => {
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
-  const [editingProject, setEditingProject] = useState(null);
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -74,11 +71,6 @@ const ProfileSummary = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (!error) window.location.href = '/login';
-  };
-
-  const handleEditProject = (project) => {
-    setEditingProject(project);
-    setIsProjectModalOpen(true);
   };
 
   const handleDeleteProject = async (projectId) => {
@@ -183,13 +175,7 @@ const ProfileSummary = () => {
                   <p className="text-sm text-gray-600 mb-1">🔧 Skill: {project.skill}</p>
                   <p className="text-xs text-gray-500">Posted: {new Date(project.created_at).toLocaleString()}</p>
 
-                  <div className="absolute top-3 right-3 space-x-2 flex">
-                    <button
-                      onClick={() => handleEditProject(project)}
-                      className="text-sm text-indigo-600 hover:underline"
-                    >
-                      ✏️ Edit
-                    </button>
+                  <div className="absolute top-3 right-3">
                     <button
                       onClick={() => handleDeleteProject(project.id)}
                       className="text-sm text-red-500 hover:underline"
@@ -204,15 +190,6 @@ const ProfileSummary = () => {
         </div>
       </div>
 
-      <PostProjectModal
-        isOpen={isProjectModalOpen}
-        onClose={() => {
-          setIsProjectModalOpen(false);
-          setEditingProject(null);
-        }}
-        onProjectPosted={() => window.location.reload()}
-        existingProject={editingProject}
-      />
       <Footer />
     </>
   );

@@ -16,7 +16,6 @@ function Header() {
   const [userProfileExists, setUserProfileExists] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [fullName, setFullName] = useState('');
-  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,23 +42,10 @@ function Header() {
         if (!hasProfile && location.pathname === '/profile-summary') {
           navigate('/#how-it-works');
         }
-
-        // Fetch unread message count
-        const { data: unreadMessages } = await supabase
-          .from('messages')
-          .select('id')
-          .eq('receiver_id', session.user.id)
-          .is('is_read', false);
-
-        if (unreadMessages) {
-          setUnreadCount(unreadMessages.length);
-        }
       } else {
         setUserProfileExists(false);
         setAvatarUrl('');
         setFullName('');
-        setUnreadCount(0);
-
         if (location.pathname === '/profile-summary' || location.pathname === '/profile') {
           navigate('/#how-it-works');
         }
@@ -94,16 +80,6 @@ function Header() {
             <Link to="/explore" className="text-gray-700 hover:text-[#7c3aed]">Explore Skills</Link>
             <Link to="/community" className="text-gray-700 hover:text-[#7c3aed]">Community</Link>
             <Link to="/about" className="text-gray-700 hover:text-[#7c3aed]">About</Link>
-            {session && userProfileExists && (
-              <Link to="/inbox" className="relative text-gray-700 hover:text-[#7c3aed]">
-                📬 Inbox
-                {unreadCount > 0 && (
-                  <span className="absolute -top-2 -right-3 bg-red-600 text-white rounded-full text-xs px-1.5">
-                    {unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
           </nav>
 
           <div className="flex items-center space-x-3">

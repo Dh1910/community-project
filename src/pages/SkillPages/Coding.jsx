@@ -1,15 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { Link, useNavigate } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 
 const Coding = () => {
-  const navigate = useNavigate();
-
-  const handleJoinClick = () => {
-    navigate('/coding-community');
-  };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <>
@@ -22,12 +19,6 @@ const Coding = () => {
           <p className="text-lg text-gray-700 mb-8">
             Dive into programming with hands-on practice, expert resources, and a supportive community. Whether you're a beginner or aiming to go pro, this is your space to grow.
           </p>
-          <button
-            onClick={handleJoinClick}
-            className="inline-block px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-          >
-            Join Coding Community
-          </button>
         </div>
       </section>
 
