@@ -37,7 +37,7 @@ const Guitar = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2016/11/29/05/08/adult-1866795_1280.jpg"
+              src="https://images.pexels.com/photos/165971/pexels-photo-165971.jpeg"
               alt="Guitar"
               className="rounded-xl shadow-lg"
             />

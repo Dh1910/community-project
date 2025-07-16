@@ -41,7 +41,7 @@ const CustomSkill = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2015/09/05/21/51/board-924950_1280.jpg"
+              src="https://th.bing.com/th/id/OIP.Wd0_OZ_YlMa3Fgscnxz_qwHaE8"
               alt="Custom Skill"
               className="rounded-xl shadow-lg"
             />

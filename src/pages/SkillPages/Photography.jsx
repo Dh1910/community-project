@@ -37,7 +37,7 @@ const Photography = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2016/03/27/22/22/camera-1284507_1280.jpg"
+              src="https://images.pexels.com/photos/212372/pexels-photo-212372.jpeg"
               alt="Photography"
               className="rounded-xl shadow-lg"
             />

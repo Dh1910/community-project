@@ -39,7 +39,7 @@ const Coding = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2017/06/10/07/30/code-2389239_1280.jpg"
+              src="https://cdn.pixabay.com/photo/2015/09/09/21/12/monitor-933392_1280.jpg"
               alt="Coding"
               className="rounded-xl shadow-lg"
             />

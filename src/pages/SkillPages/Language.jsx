@@ -37,7 +37,7 @@ const Language = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2017/06/10/06/27/languages-2389230_1280.jpg"
+              src="https://images.pexels.com/photos/3728084/pexels-photo-3728084.jpeg"
               alt="Language"
               className="rounded-xl shadow-lg"
             />

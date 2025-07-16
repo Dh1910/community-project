@@ -37,7 +37,7 @@ const Fitness = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2016/03/27/22/16/sport-1284656_1280.jpg"
+              src="https://images.pexels.com/photos/39671/physiotherapy-weight-training-dumbbell-exercise-balls-39671.jpeg"
               alt="Fitness"
               className="rounded-xl shadow-lg"
             />

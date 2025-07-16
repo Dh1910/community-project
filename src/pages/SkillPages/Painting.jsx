@@ -39,7 +39,7 @@ const Painting = () => {
           </div>
           <div>
             <img
-              src="https://cdn.pixabay.com/photo/2017/08/01/08/29/art-2569234_1280.jpg"
+              src="https://cdn.pixabay.com/photo/2017/11/07/18/40/brushes-2927793_1280.jpg"
               alt="Painting"
               className="rounded-xl shadow-lg"
             />
