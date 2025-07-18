@@ -10,6 +10,7 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
   const [skill, setSkill] = useState('');
   const [mood, setMood] = useState('');
   const [duration, setDuration] = useState('');
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
@@ -30,13 +31,13 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
 
   useEffect(() => {
     if (existingPost) {
-      setTitle(existingPost.title);
-      setContent(existingPost.content);
+      setTitle(existingPost.title || '');
+      setContent(existingPost.content || '');
       setImageUrl(existingPost.image_url || '');
-      setSkill(existingPost.skill);
-      setMood(existingPost.mood);
-      setDuration(existingPost.duration);
       setVisibility(existingPost.visibility || 'public');
+      setSkill(existingPost.skill || '');
+      setMood(existingPost.mood || '');
+      setDuration(existingPost.duration || '');
     } else {
       setTitle('');
       setContent('');
@@ -46,6 +47,7 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
       setMood('');
       setDuration('');
     }
+    setImageError(false);
   }, [existingPost]);
 
   const handlePublish = async () => {
@@ -55,7 +57,7 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
     }
 
     if (!title || !content || !skill || !mood || !duration) {
-      alert("All fields including skill, mood, and duration are required.");
+      alert("Please fill all the fields.");
       return;
     }
 
@@ -73,13 +75,22 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
 
     let result;
     if (existingPost) {
-      result = await supabase.from('posts').update(postData).eq('id', existingPost.id).select('*').single();
+      result = await supabase
+        .from('posts')
+        .update(postData)
+        .eq('id', existingPost.id)
+        .select('*')
+        .single();
     } else {
-      result = await supabase.from('posts').insert([postData]).select('*').single();
+      result = await supabase
+        .from('posts')
+        .insert([postData])
+        .select('*')
+        .single();
     }
 
     if (result.error) {
-      alert("Failed to publish post: " + result.error.message);
+      alert("❌ Failed to publish post: " + result.error.message);
     } else {
       alert(existingPost ? "✅ Post updated!" : "✅ Post published!");
       onClose();
@@ -93,39 +104,44 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
     <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">📝 {existingPost ? 'Edit Post' : 'Create New Post'}</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            {existingPost ? '🛠 Edit Post' : '📝 Create New Post'}
+          </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-800 text-2xl">×</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Title */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Your post title..."
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+              className="w-full border rounded-lg px-4 py-2 text-sm"
+              placeholder="Enter post title"
             />
           </div>
 
+          {/* Content */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
             <textarea
-              rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 text-sm resize-none"
+              rows={4}
               placeholder="Share your thoughts..."
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none resize-none"
-            ></textarea>
+            />
           </div>
 
+          {/* Skill */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Skill</label>
             <select
               value={skill}
               onChange={(e) => setSkill(e.target.value)}
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+              className="w-full border rounded-lg px-4 py-2 text-sm"
             >
               <option value="">Select a skill</option>
               <option value="Cooking">Cooking</option>
@@ -138,12 +154,13 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
             </select>
           </div>
 
+          {/* Mood */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Mood</label>
             <select
               value={mood}
               onChange={(e) => setMood(e.target.value)}
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+              className="w-full border rounded-lg px-4 py-2 text-sm"
             >
               <option value="">Select mood</option>
               <option value="Motivated">Motivated</option>
@@ -155,41 +172,50 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
             </select>
           </div>
 
+          {/* Duration */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Duration (in minutes)</label>
             <input
               type="number"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 text-sm"
               placeholder="How long did you practice?"
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
-              min="1"
+              min={1}
             />
           </div>
 
+          {/* Image URL */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
             <input
               type="url"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Paste image URL"
-              className="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-violet-300 focus:outline-none"
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setImageError(false);
+              }}
+              className="w-full border rounded-lg px-4 py-2 text-sm"
+              placeholder="Paste image URL here"
             />
-            {imageUrl && (
+            {imageUrl && !imageError && (
               <img
                 src={imageUrl}
                 alt="Preview"
+                onError={() => setImageError(true)}
                 className="mt-3 rounded-lg max-h-48 object-cover w-full border"
-                onError={() => alert('Invalid image URL')}
               />
+            )}
+            {imageError && (
+              <p className="text-sm text-red-500 mt-1">⚠️ Invalid image URL</p>
             )}
           </div>
 
+          {/* Visibility */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
             <div className="flex gap-4">
-              <label className="flex items-center text-sm text-gray-600">
+              <label className="flex items-center text-sm">
                 <input
                   type="radio"
                   name="visibility"
@@ -200,7 +226,7 @@ const CreatePostModal = ({ isOpen, onClose, existingPost = null, onPostUpdated }
                 />
                 Public
               </label>
-              <label className="flex items-center text-sm text-gray-600">
+              <label className="flex items-center text-sm">
                 <input
                   type="radio"
                   name="visibility"

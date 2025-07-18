@@ -35,6 +35,9 @@ import Painting from './pages/SkillPages/Painting.jsx';
 import Photography from './pages/SkillPages/Photography.jsx';
 import CustomSkill from './pages/SkillPages/CustomSkill.jsx';
 
+import CommentSection from './pages/CommentSection.jsx';
+
+
 
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
@@ -84,13 +87,10 @@ function App() {
         <Route path="/skill/painting" element={<Painting />} />
         <Route path="/skill/photography" element={<Photography />} />
         <Route path="/skill/custom" element={<CustomSkill />} />
-
-        
-
         <Route path="/coding-community" element={<Navigate to="/skill/coding" />} />
 
-        {/* Optional: Catch-all for unmatched routes */}
-        {/* <Route path="*" element={<NotFound />} /> */}
+        <Route path="/commentsection" element={<CommentSection />} />
+
       </Routes>
     </Router>
   );
