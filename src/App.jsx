@@ -1,43 +1,42 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
 
-import Header from './components/Header.jsx';
-import HeroSection from './components/HeroSection.jsx';
-import Skills from './components/Skills.jsx';
-import ScrollToTop from './components/ScrollToTop';
-import CTA from './components/CTA.jsx';
-import Users from './components/Users.jsx';
-import Feed from './components/Feed.jsx';
-import Benefits from './components/Benefits.jsx';
-import Footer from './components/Footer.jsx';
+import Header from "./components/Header.jsx";
+import HeroSection from "./components/HeroSection.jsx";
+import Skills from "./components/Skills.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import CTA from "./components/CTA.jsx";
+import Users from "./components/Users.jsx";
+import Feed from "./components/Feed.jsx";
+import Benefits from "./components/Benefits.jsx";
+import Footer from "./components/Footer.jsx";
 
-import HowItWorks from './pages/HowItWorks.jsx';
-import Community from './pages/Community.jsx';
-import Login from './pages/Login.jsx';
-import Signup from './pages/Signup.jsx';
-import Explore from './pages/Explore.jsx';
-import About from './pages/About.jsx';
-import Profile from './pages/Profile.jsx';
-import ProfileSummary from './pages/ProfileSummary.jsx';
-import FAQ from './pages/FAQ.jsx';
-import Privacy from './pages/Privacy.jsx';
-import TOS from './pages/TOS.jsx';
-import CreatePostModal from './pages/CreatePostModal.jsx';
-import StartDiscussionModal from './pages/StartDiscussionModal.jsx';
-import CreateCommunity from './pages/CreateCommunity.jsx';
+import HowItWorks from "./pages/HowItWorks.jsx";
+import Community from "./pages/Community.jsx";
+import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
+import Explore from "./pages/Explore.jsx";
+import About from "./pages/About.jsx";
+import Profile from "./pages/Profile.jsx";
+import ProfileSummary from "./pages/ProfileSummary.jsx";
+import FAQ from "./pages/FAQ.jsx";
+import Privacy from "./pages/Privacy.jsx";
+import TOS from "./pages/TOS.jsx";
+import ContactUs from "./pages/ContactUs.jsx";
+import CreatePostModal from "./pages/CreatePostModal.jsx";
+import StartDiscussionModal from "./pages/StartDiscussionModal.jsx";
+import CreateCommunity from "./pages/CreateCommunity.jsx";
 
-import Coding from './pages/SkillPages/Coding.jsx';
-import Guitar from './pages/SkillPages/Guitar.jsx';
-import Cooking from './pages/SkillPages/Cooking.jsx';
-import Fitness from './pages/SkillPages/Fitness.jsx';
-import Language from './pages/SkillPages/Language.jsx';
-import Painting from './pages/SkillPages/Painting.jsx';
-import Photography from './pages/SkillPages/Photography.jsx';
-import CustomSkill from './pages/SkillPages/CustomSkill.jsx';
+import Coding from "./pages/SkillPages/Coding.jsx";
+import Guitar from "./pages/SkillPages/Guitar.jsx";
+import Cooking from "./pages/SkillPages/Cooking.jsx";
+import Fitness from "./pages/SkillPages/Fitness.jsx";
+import Language from "./pages/SkillPages/Language.jsx";
+import Painting from "./pages/SkillPages/Painting.jsx";
+import Photography from "./pages/SkillPages/Photography.jsx";
+import CustomSkill from "./pages/SkillPages/CustomSkill.jsx";
 
-import CommentSection from './pages/CommentSection.jsx';
-
-
+import CommentSection from "./pages/CommentSection.jsx";
 
 function HomePage({ openModal, openLogin, openSignup }) {
   return (
@@ -74,9 +73,9 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/terms" element={<TOS />} />
+        <Route path="/contact" element={<ContactUs />} />
         <Route path="/create-community" element={<CreateCommunity />} />
         <Route path="/skills" element={<Skills />} />
-
 
         {/* Skill Pages */}
         <Route path="/skill/coding" element={<Coding />} />
@@ -89,8 +88,8 @@ function App() {
         <Route path="/skill/custom" element={<CustomSkill />} />
         <Route path="/coding-community" element={<Navigate to="/skill/coding" />} />
 
+        {/* Other Pages */}
         <Route path="/commentsection" element={<CommentSection />} />
-
       </Routes>
     </Router>
   );
