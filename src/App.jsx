@@ -58,7 +58,8 @@ function App() {
     <Router>
       <ScrollToTop />  
       <Routes>
-       
+      <Route path="/" element={<HomePage />} />
+
         <Route path="/howitworks" element={<HowItWorks />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/community" element={<Community />} />
