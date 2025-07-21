@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -51,30 +53,34 @@ const FAQ = () => {
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        Frequently Asked Questions
-      </h1>
-      <div className="space-y-4">
-        {faqs.map((faq, index) => (
-          <div
-            key={index}
-            className="border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition"
-            onClick={() => toggleFAQ(index)}
-          >
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">{faq.question}</h2>
-              <span className="text-xl">
-                {openIndex === index ? "-" : "+"}
-              </span>
+    <>
+      <Header />
+      <div className="p-4 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Frequently Asked Questions
+        </h1>
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="border rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition"
+              onClick={() => toggleFAQ(index)}
+            >
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">{faq.question}</h2>
+                <span className="text-xl">
+                  {openIndex === index ? "-" : "+"}
+                </span>
+              </div>
+              {openIndex === index && (
+                <p className="mt-2 text-gray-600">{faq.answer}</p>
+              )}
             </div>
-            {openIndex === index && (
-              <p className="mt-2 text-gray-600">{faq.answer}</p>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 

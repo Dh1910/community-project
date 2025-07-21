@@ -49,7 +49,6 @@ function HomePage({ openModal, openLogin, openSignup }) {
       <Benefits />
       <CTA />
       <Footer />
-      <ScrollToTop />
     </>
   );
 }
@@ -57,9 +56,9 @@ function HomePage({ openModal, openLogin, openSignup }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />  
       <Routes>
-        {/* Main Pages */}
-        <Route path="/" element={<HomePage />} />
+       
         <Route path="/howitworks" element={<HowItWorks />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/community" element={<Community />} />
