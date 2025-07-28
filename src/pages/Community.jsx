@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import CreatePostModal from './CreatePostModal'; // ✅ Import Modal
+import CreatePostModal from './CreatePostModal';
 import customIcon from '../assets/icons/custom.png';
 
 function Community() {
@@ -13,13 +13,15 @@ function Community() {
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false); // ✅ modal state
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
   const postSectionRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) setUser(user);
     };
     fetchUser();
@@ -43,27 +45,47 @@ function Community() {
 
         const { data: joined } = await supabase
           .from('user_communities')
-          .select('community_id, communities(name)')
+          .select('community_id, communities(*)')
           .eq('user_id', user.id);
-        setJoinedCommunities(joined?.map(j => j.community_id) || []);
-      }
 
-      const { data: comms } = await supabase.from('communities').select('*');
-      setCommunities(comms || []);
+        const joinedComms = joined?.map((j) => j.communities).filter(Boolean) || [];
+
+        const { data: created } = await supabase
+          .from('communities')
+          .select('*')
+          .eq('created_by', user.id);
+
+        const allUserCommunities = [...joinedComms, ...(created || [])];
+        const uniqueMap = new Map();
+        allUserCommunities.forEach((c) => c && uniqueMap.set(c.id, c));
+        setCommunities([...uniqueMap.values()]);
+
+        setJoinedCommunities(joinedComms.map((c) => c.id));
+      }
     };
 
-    fetchData();
+    if (user) {
+      fetchData();
+    }
   }, [user]);
 
   const handleJoinCommunity = async (communityId) => {
     if (!user) return alert('Please login to join communities');
 
     const { error } = await supabase.from('user_communities').insert([
-      { user_id: user.id, community_id: communityId }
+      {
+        user_id: user.id,
+        community_id: communityId,
+      },
     ]);
 
     if (!error) {
-      setJoinedCommunities(prev => [...prev, communityId]);
+      setJoinedCommunities((prev) => [...prev, communityId]);
+      const { data: comm } = await supabase
+        .from('communities')
+        .select('*')
+        .eq('id', communityId);
+      setCommunities((prev) => [...prev, ...comm]);
     }
   };
 
@@ -75,10 +97,15 @@ function Community() {
     setSearch('');
   };
 
-  const combinedPosts = [...allPosts, ...myPosts];
+  // ✅ Merge all posts and your posts, remove duplicates, and sort by time
+  const allCombinedPosts = [...(allPosts || []), ...(myPosts || [])];
   const uniquePostsMap = new Map();
-  combinedPosts.forEach(post => uniquePostsMap.set(post.id, post));
-  const filteredPosts = [...uniquePostsMap.values()].filter(post =>
+  allCombinedPosts.forEach(post => uniquePostsMap.set(post.id, post));
+  const mergedPosts = [...uniquePostsMap.values()].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+
+  const filteredPosts = mergedPosts.filter((post) =>
     post.skill?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -102,7 +129,7 @@ function Community() {
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <button
                   className="bg-[#7c3aed] text-white px-5 py-3 rounded-md hover:bg-[#6b21a8] flex items-center"
-                  onClick={() => setIsPostModalOpen(true)} // ✅ Open modal
+                  onClick={() => setIsPostModalOpen(true)}
                 >
                   <img src={customIcon} alt="custom" className="w-5 h-5 mr-2 invert" />
                   Create Post
@@ -137,7 +164,7 @@ function Community() {
       {/* Community List */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">Community Forums</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">Your Communities</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {communities.map((community) => (
               <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
@@ -200,16 +227,22 @@ function Community() {
           Connect with fellow learners, share your progress, and accelerate your skill development.
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
-          <a href="/signup" className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed]">
+          <a
+            href="/signup"
+            className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed]"
+          >
             Create Your Account
           </a>
-          <a href="/community" className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed]">
+          <a
+            href="/community"
+            className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-[#7c3aed]"
+          >
             Explore Community
           </a>
         </div>
       </section>
 
-      {/* ✅ Render Modal if open */}
+      {/* Post Modal */}
       {isPostModalOpen && (
         <CreatePostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />
       )}
