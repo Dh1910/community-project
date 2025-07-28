@@ -43,10 +43,17 @@ function Community() {
           .order('created_at', { ascending: false });
         setMyPosts(mine || []);
 
-        const { data: joined } = await supabase
-          .from('user_communities')
-          .select('community_id, communities(*)')
-          .eq('user_id', user.id);
+       const { data: joined } = await supabase
+  .from('user_communities')
+  .select(`
+    community_id,
+    communities (
+      *,
+      profiles:created_by (full_name, avatar_url)
+    )
+  `)
+  .eq('user_id', user.id);
+
 
         const joinedComms = joined?.map((j) => j.communities).filter(Boolean) || [];
 
@@ -85,7 +92,13 @@ function Community() {
         .from('communities')
         .select('*')
         .eq('id', communityId);
-      setCommunities((prev) => [...prev, ...comm]);
+      setCommunities((prev) => {
+  const all = [...prev, ...comm];
+  const uniqueMap = new Map();
+  all.forEach((c) => uniqueMap.set(c.id, c));
+  return [...uniqueMap.values()];
+});
+
     }
   };
 
@@ -166,24 +179,48 @@ function Community() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">Your Communities</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {communities.map((community) => (
-              <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
-                <div className="flex justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{community.name}</h3>
-                  {joinedCommunities.includes(community.id) ? (
-                    <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Joined</span>
-                  ) : (
-                    <button
-                      className="text-xs px-2 py-1 border text-[#7c3aed] border-[#7c3aed] rounded-md"
-                      onClick={() => handleJoinCommunity(community.id)}
-                    >
-                      Join
-                    </button>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500">{community.description}</p>
-              </div>
-            ))}
+           {communities.map((community) => (
+  <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
+    
+    {/* ✅ Creator Profile */}
+    <div className="flex items-center gap-3 mb-4">
+      <img
+        src={community.profiles?.avatar_url || 'https://via.placeholder.com/40'}
+        alt={community.profiles?.full_name || 'User'}
+        className="w-10 h-10 rounded-full object-cover"
+      />
+      <span className="text-sm font-medium text-gray-800">
+        {community.profiles?.full_name || 'Unknown User'}
+      </span>
+    </div>
+
+    {/* ✅ Community Name & Image */}
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">{community.name}</h3>
+    {community.image_url && (
+      <img
+        src={community.image_url}
+        alt={community.name}
+        className="w-full h-40 object-cover rounded-lg mb-4"
+      />
+    )}
+
+    {/* ✅ Description */}
+    <p className="text-sm text-gray-500 mb-4">{community.description}</p>
+
+    {/* ✅ Join Button */}
+    {joinedCommunities.includes(community.id) ? (
+      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Joined</span>
+    ) : (
+      <button
+        className="text-xs px-3 py-1 border text-[#7c3aed] border-[#7c3aed] rounded-md"
+        onClick={() => handleJoinCommunity(community.id)}
+      >
+        Join
+      </button>
+    )}
+  </div>
+))}
+
           </div>
         </div>
       </section>
