@@ -18,7 +18,6 @@ const ProfileSummary = () => {
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
   const [savedPostIds, setSavedPostIds] = useState([]);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [likes, setLikes] = useState({});
   const [likeAnimation, setLikeAnimation] = useState({});
   const [userId, setUserId] = useState(null);
@@ -115,10 +114,11 @@ const ProfileSummary = () => {
     };
 
     fetchProfileData();
+  }, []);
 
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
         setCommentMenu({});
       }
     };
@@ -216,84 +216,103 @@ const ProfileSummary = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen pt-28 px-4 pb-16 bg-gray-50">
-        <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow relative">
-          <h2 className="text-2xl font-bold text-[#7c3aed] mb-6 text-center">Profile Summary</h2>
-
-          <div className="flex justify-center mb-6">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#7c3aed]">
-              <img
-                src={profile.avatar_url}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6 text-center space-y-1">
-            <p className="text-xl font-semibold text-[#333]">{profile.full_name}</p>
-            <p className="text-sm text-gray-500">{profile.email}</p>
-          </div>
-
-          {joinedCommunities.length > 0 && (
-            <div className="mb-6 text-center">
-              <p className="text-md text-gray-600">
-                🧩 Joined Communities: {joinedCommunities.join(', ')}
-              </p>
-            </div>
-          )}
-
-          <div className="absolute top-4 right-4" ref={menuRef}>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="text-xl">⋮</button>
-            {menuOpen && (
-              <div className="flex flex-col absolute right-0 top-6 bg-white border shadow rounded text-sm w-40 z-10 text-left">
-                <a href="/profile" className="px-4 py-2 pl-4 hover:bg-gray-100">Edit Profile</a>
-                <button onClick={handleLogout} className="px-4 py-2 pl-4 text-left hover:bg-gray-100">Logout</button>
+      <div className="min-h-screen pt-20 px-4 pb-16 bg-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="h-16 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-lg"></div>
+          <div className="max-w-7xl mx-auto bg-white p-4 rounded-b-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center ml-8">
+                <div className="w-25 h-25 rounded-full overflow-hidden border-2 border-[#7c3aed] -mt-10">
+                  <img
+                    src={profile.avatar_url}
+                    alt="Profile"
+                    className="w-full h-full object-cover "
+                  />
+                </div>
+                <div className="text-center mt-2">
+                  <h2 className="text-xl font-bold text-[#333]">{profile.full_name}</h2>
+                  <p className="text-sm text-gray-500">{profile.email}</p>
+                  {joinedCommunities.length > 0 && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      🧩 Joined: {joinedCommunities.join(', ')}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+            <div className="flex gap-2">
+              <a
+                href="/profile"
+                className="px-3 py-1 text-sm text-white bg-[#7c3aed] rounded hover:bg-[#6b21a8] transition-colors"
+              >
+                Edit Profile
+              </a>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto mt-10 px-4">
-          <h3 className="text-2xl font-bold mb-6 text-[#7c3aed]">📌 Your Posts</h3>
-          {posts.length === 0 ? (
-            <p className="text-gray-600">You haven't posted anything yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map(post => (
-                <div key={post.id} className="bg-white border rounded-xl shadow p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img src={profile.avatar_url} className="w-8 h-8 rounded-full" alt="Avatar" />
-                      <span className="font-medium">{profile.full_name}</span>
+          <h3 className="text-xl font-bold mb-4 text-[#7c3aed]">📌 Your Posts</h3>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2">
+              {posts.length === 0 ? (
+                <p className="text-gray-600">You haven't posted anything yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                  {posts.map(post => (
+                    <div key={post.id} className="bg-white border rounded-lg shadow p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <img src={profile.avatar_url} className="w-8 h-8 rounded-full" alt="Avatar" />
+                          <span className="font-medium text-sm">{profile.full_name}</span>
+                        </div>
+                        <PostMenu post={post} onEditPost={handleEditPost} />
+                      </div>
+                      {post.image_url ? (
+                        <img src={post.image_url} alt="Post" className="mt-2 h-40 w-full object-cover rounded" />
+                      ) : (
+                        <div className="h-40 flex items-center justify-center bg-gray-100 text-gray-400">No Image</div>
+                      )}
+                      <h4 className="mt-3 text-lg font-semibold">{post.title}</h4>
+                      <p className="text-sm text-gray-600">{post.content}</p>
                     </div>
-                    <PostMenu post={post} onEditPost={handleEditPost} />
-                  </div>
-                  {post.image_url ? (
-                    <img src={post.image_url} alt="Post" className="mt-2 h-40 w-full object-cover rounded" />
-                  ) : (
-                    <div className="h-40 flex items-center justify-center bg-gray-100 text-gray-400">No Image</div>
-                  )}
-                  <h4 className="mt-3 text-lg font-semibold">{post.title}</h4>
-                  <p className="text-sm text-gray-600">{post.content}</p>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+            <div className="col-span-1 bg-white border rounded-lg shadow p-4">
+              <h4 className="text-lg font-semibold text-[#7c3aed]">Joined Communities</h4>
+              {joinedCommunities.length > 0 ? (
+                <ul className="mt-2 space-y-2">
+                  {joinedCommunities.map((community, index) => (
+                    <li key={index} className="text-sm text-gray-600">🧩 {community}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-600">No communities joined yet.</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto mt-16 px-4">
-          <h3 className="text-2xl font-bold mb-6 text-[#7c3aed]">🔖 Saved Posts</h3>
+        <div className="max-w-7xl mx-auto mt-10 px-4">
+          <h3 className="text-xl font-bold mb-4 text-[#7c3aed]">🔖 Saved Posts</h3>
           {editedMessage && <div className="mb-4 text-green-600 font-semibold text-sm">{editedMessage}</div>}
           {savedPosts.length === 0 ? (
             <p className="text-gray-600">You haven’t saved any posts yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedPosts.map(post => (
-                <div key={post.id} className="bg-white border rounded-xl shadow p-3">
+                <div key={post.id} className="bg-white border rounded-lg shadow p-4">
                   <div className="flex items-center gap-3 mb-2">
                     <img src={post.profiles?.avatar_url || ''} className="w-8 h-8 rounded-full" alt="user" />
-                    <span className="font-medium">{post.profiles?.full_name}</span>
+                    <span className="font-medium text-sm">{post.profiles?.full_name}</span>
                   </div>
                   {post.image_url ? (
                     <img src={post.image_url} alt="Post" className="h-40 w-full object-cover rounded" />
@@ -312,19 +331,20 @@ const ProfileSummary = () => {
                         <img
                           src={likes[post.id]?.liked ? LikeFilledIcon : LikeIcon}
                           alt="Like"
-                          className="w-6 h-6"
+                          className="w-5 h-5"
                           style={{ filter: likes[post.id]?.liked ? 'brightness(0) saturate(100%) invert(28%) sepia(95%) saturate(7483%) hue-rotate(356deg) brightness(101%) contrast(105%)' : 'none' }}
                         />
-                        {likes[post.id]?.count || 0}
+                        <span className="text-sm">{likes[post.id]?.count || 0}</span>
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); setShowCommentBox(prev => ({ ...prev, [post.id]: !prev[post.id] })) }} className="flex items-center gap-1">
-                        <img src={CommentIcon} alt="Comment" className="w-6 h-6" /> {comments[post.id]?.length || 0}
+                        <img src={CommentIcon} alt="Comment" className="w-5 h-5" />
+                        <span className="text-sm">{comments[post.id]?.length || 0}</span>
                       </button>
                     </div>
                     <button onClick={() => toggleSave(post.id)}>
                       <img
                         src={savedPostIds.includes(post.id) ? SaveFilledIcon : SaveIcon}
-                        className="w-6 h-6"
+                        className="w-5 h-5"
                         alt="Save"
                       />
                     </button>
@@ -344,7 +364,7 @@ const ProfileSummary = () => {
                           onClick={() => handleCommentSubmit(post.id)}
                           className="transition-transform hover:scale-110"
                         >
-                          <img src={SendIcon} alt="Send" className="w-6 h-6" style={{ filter: 'brightness(0) saturate(100%) invert(35%) sepia(80%) saturate(7483%) hue-rotate(200deg) brightness(95%) contrast(105%)' }} />
+                          <img src={SendIcon} alt="Send" className="w-5 h-5" style={{ filter: 'brightness(0) saturate(100%) invert(35%) sepia(80%) saturate(7483%) hue-rotate(200deg) brightness(95%) contrast(105%)' }} />
                         </button>
                       </div>
                       {(comments[post.id] || []).map((comment, i) => (
@@ -366,7 +386,7 @@ const ProfileSummary = () => {
                                         onClick={() => setEditingComment(prev => ({ ...prev, [comment.id]: comment.content }))}
                                       >Edit</button>
                                       <button
-                                        className="block w-full px-2 py-1 text-left hover:bg-gray-100 text-red-600"
+                                        className="block w-full px-2 py-1 text-left hover:bg-red-50 text-red-600"
                                         onClick={() => handleCommentDelete(comment.id, post.id)}
                                       >Delete</button>
                                     </div>
@@ -451,9 +471,9 @@ const PostMenu = ({ post, onEditPost }) => {
 
   return (
     <div className="relative" ref={menuRef}>
-      <button onClick={() => setOpen(!open)} className="text-xl text-gray-600">⋮</button>
+      <button onClick={() => setOpen(!open)} className="text-lg text-gray-600 hover:text-[#7c3aed]">⋮</button>
       {open && (
-        <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-md z-10">
+        <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-lg z-10">
           <button
             onClick={() => {
               onEditPost(post);
