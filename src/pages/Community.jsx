@@ -19,9 +19,7 @@ function Community() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) setUser(user);
     };
     fetchUser();
@@ -43,31 +41,22 @@ function Community() {
           .order('created_at', { ascending: false });
         setMyPosts(mine || []);
 
-       const { data: joined } = await supabase
-  .from('user_communities')
-  .select(`
-    community_id,
-    communities (
-      *,
-      profiles:created_by (full_name, avatar_url)
-    )
-  `)
-  .eq('user_id', user.id);
-
-
-        const joinedComms = joined?.map((j) => j.communities).filter(Boolean) || [];
-
-        const { data: created } = await supabase
+        // Get all communities with creator info
+        const { data: allCommunities } = await supabase
           .from('communities')
-          .select('*')
-          .eq('created_by', user.id);
+          .select(`
+            *,
+            profiles:created_by (full_name, avatar_url)
+          `);
 
-        const allUserCommunities = [...joinedComms, ...(created || [])];
-        const uniqueMap = new Map();
-        allUserCommunities.forEach((c) => c && uniqueMap.set(c.id, c));
-        setCommunities([...uniqueMap.values()]);
+        // Get only the ones user has joined
+        const { data: joined } = await supabase
+          .from('user_communities')
+          .select('community_id')
+          .eq('user_id', user.id);
 
-        setJoinedCommunities(joinedComms.map((c) => c.id));
+        setCommunities(allCommunities || []);
+        setJoinedCommunities(joined?.map((j) => j.community_id) || []);
       }
     };
 
@@ -86,19 +75,29 @@ function Community() {
       },
     ]);
 
-    if (!error) {
+    if (error) {
+      console.error('Error joining community:', error);
+      alert('❌ Failed to join community.');
+    } else {
       setJoinedCommunities((prev) => [...prev, communityId]);
-      const { data: comm } = await supabase
-        .from('communities')
-        .select('*')
-        .eq('id', communityId);
-      setCommunities((prev) => {
-  const all = [...prev, ...comm];
-  const uniqueMap = new Map();
-  all.forEach((c) => uniqueMap.set(c.id, c));
-  return [...uniqueMap.values()];
-});
+      alert('✅ Successfully joined community.');
+    }
+  };
 
+  const handleLeaveCommunity = async (communityId) => {
+    if (!user) return alert('Please login to leave communities');
+
+    const { error } = await supabase
+      .from('user_communities')
+      .delete()
+      .match({ user_id: user.id, community_id: communityId });
+
+    if (error) {
+      console.error('Error leaving community:', error);
+      alert('❌ Failed to leave community.');
+    } else {
+      setJoinedCommunities((prev) => prev.filter((id) => id !== communityId));
+      alert('✅ Successfully left community.');
     }
   };
 
@@ -110,7 +109,7 @@ function Community() {
     setSearch('');
   };
 
-  // ✅ Merge all posts and your posts, remove duplicates, and sort by time
+  // Merge all posts and your posts, remove duplicates, and sort by time
   const allCombinedPosts = [...(allPosts || []), ...(myPosts || [])];
   const uniquePostsMap = new Map();
   allCombinedPosts.forEach(post => uniquePostsMap.set(post.id, post));
@@ -179,81 +178,52 @@ function Community() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">Your Communities</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {communities.map((community) => (
-  <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
-    
-    {/* ✅ Creator Profile */}
-    <div className="flex items-center gap-3 mb-4">
-      <img
-        src={community.profiles?.avatar_url || 'https://via.placeholder.com/40'}
-        alt={community.profiles?.full_name || 'User'}
-        className="w-10 h-10 rounded-full object-cover"
-      />
-      <span className="text-sm font-medium text-gray-800">
-        {community.profiles?.full_name || 'Unknown User'}
-      </span>
-    </div>
-
-    {/* ✅ Community Name & Image */}
-    <h3 className="text-lg font-semibold text-gray-900 mb-2">{community.name}</h3>
-    {community.image_url && (
-      <img
-        src={community.image_url}
-        alt={community.name}
-        className="w-full h-40 object-cover rounded-lg mb-4"
-      />
-    )}
-
-    {/* ✅ Description */}
-    <p className="text-sm text-gray-500 mb-4">{community.description}</p>
-
-    {/* ✅ Join Button */}
-    {joinedCommunities.includes(community.id) ? (
-      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Joined</span>
-    ) : (
-      <button
-        className="text-xs px-3 py-1 border text-[#7c3aed] border-[#7c3aed] rounded-md"
-        onClick={() => handleJoinCommunity(community.id)}
-      >
-        Join
-      </button>
-    )}
-  </div>
-))}
-
-          </div>
-        </div>
-      </section>
-
-      {/* Posts Section */}
-      <section ref={postSectionRef} className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">
-            {search ? `Results for "${search}"` : 'All Skill Posts'}
-          </h2>
-          {filteredPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.map((post) => (
-                <div key={post.id} className="bg-white p-6 rounded-lg shadow">
-                  <h4 className="text-lg font-semibold mb-1">{post.caption}</h4>
-                  <p className="text-sm text-gray-700 mb-2">{post.description}</p>
-                  {post.media_url && (
-                    <img
-                      src={post.media_url}
-                      alt="Post"
-                      className="w-full h-48 object-cover rounded-md mb-2"
-                    />
-                  )}
-                  <div className="text-xs text-gray-500">
-                    <p><strong>Skill:</strong> {post.skill}</p>
-                    <p>{new Date(post.created_at).toLocaleString()}</p>
-                  </div>
+            {communities.map((community) => (
+              <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
+                {/* Creator Profile */}
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={community.profiles?.avatar_url || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'}
+                    alt={community.profiles?.full_name || 'User'}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <span className="text-sm font-medium text-gray-800">
+                    {community.profiles?.full_name || 'Unknown User'}
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-600">No posts found for the selected skill.</p>
-          )}
+
+                {/* Community Name & Image */}
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{community.name}</h3>
+                {community.image_url && (
+                  <img
+                    src={community.image_url}
+                    alt={community.name}
+                    className="w-full h-40 object-cover rounded-lg mb-4"
+                  />
+                )}
+
+                {/* Description */}
+                <p className="text-sm text-gray-500 mb-4">{community.description}</p>
+
+                {/* Join/Leave Button */}
+                {joinedCommunities.includes(community.id) ? (
+                  <button
+                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full w-full"
+                    onClick={() => handleLeaveCommunity(community.id)}
+                  >
+                    view community
+                  </button>
+                ) : (
+                  <button
+                    className="text-xs px-3 py-1 border w-full bg-[#7c3aed] text-white rounded-md"
+                    onClick={() => handleJoinCommunity(community.id)}
+                  >
+                    Join community
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -16,6 +16,7 @@ const ProfileSummary = () => {
   const [posts, setPosts] = useState([]);
   const [projects, setProjects] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
+  const [createdCommunities, setCreatedCommunities] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
   const [savedPostIds, setSavedPostIds] = useState([]);
   const [likes, setLikes] = useState({});
@@ -71,6 +72,16 @@ const ProfileSummary = () => {
         .eq('user_id', user.id);
 
       setJoinedCommunities(joined?.map(j => j.communities?.name) || []);
+
+      const { data: created } = await supabase
+        .from('communities')
+        .select(`
+          *,
+          profiles:created_by (full_name, avatar_url)
+        `)
+        .eq('created_by', user.id);
+
+      setCreatedCommunities(created || []);
 
       const { data: saved } = await supabase
         .from('saved_posts')
@@ -232,11 +243,6 @@ const ProfileSummary = () => {
                 <div className="text-center mt-2">
                   <h2 className="text-xl font-bold text-[#333]">{profile.full_name}</h2>
                   <p className="text-sm text-gray-500">{profile.email}</p>
-                  {joinedCommunities.length > 0 && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      🧩 Joined: {joinedCommunities.join(', ')}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -420,6 +426,42 @@ const ProfileSummary = () => {
             </div>
           )}
         </div>
+
+        <div className="max-w-7xl mx-auto mt-10 px-4">
+          <h3 className="text-xl font-bold mb-4 text-[#7c3aed]">🌟 Created Communities</h3>
+          {createdCommunities.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {createdCommunities.map((community) => (
+                <div key={community.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={community.profiles?.avatar_url || 'https://via.placeholder.com/40'}
+                        alt={community.profiles?.full_name || 'User'}
+                        className="w-10 h-10 rounded-full object-cover"
+                      ></img>
+                      <span className="text-sm font-semibold text-gray-800">{community.profiles?.full_name || 'Unknown User'}</span>
+                    </div>
+                    <CommunityMenu community={community} setCreatedCommunities={setCreatedCommunities} />
+                  </div>
+                  <h3 className="font-semibold text-gray-700">{community.name}</h3>
+                  {community.image_url && (
+                    <img
+                      src={community.image_url}
+                      alt={community.name}
+                      className="w-full h-40 object-cover rounded-lg mb-4"
+                    />
+                  )}
+                  <p className="text-sm text-gray-500 mb-4">{community.description}</p>
+                  <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Created</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No communities joined yet.</p>
+          )}
+        </div>
+
       </div>
 
       <Footer />
@@ -437,41 +479,41 @@ export default ProfileSummary;
 
 const PostMenu = ({ post, onEditPost }) => {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef();
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post?");
     if (!confirmDelete) return;
 
-    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    const { error } = await supabase.delete().from('posts').eq('id', post.id);
     if (error) {
-      console.error('Delete error:', error);
+      console.error('Error deleting post:', error);
       alert("❌ Failed to delete post.");
     } else {
-      alert("✅ Post deleted.");
-      window.location.reload();
+      alert("✅ Post deleted successfully.");
+      window.location.reload(true);
     }
   };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
-      }
+      };
     };
 
     if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+      document.addEventListener("mousedown", handleClick);
+    };
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleDelete);
     };
   }, [open]);
 
   return (
     <div className="relative" ref={menuRef}>
-      <button onClick={() => setOpen(!open)} className="text-lg text-gray-600 hover:text-[#7c3aed]">⋮</button>
+      <button onClick={() => setOpen(!open)} className="text-lg text-gray-600 hover:text-[#7e3aed]">⋮</button>
       {open && (
         <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-lg z-10">
           <button
@@ -484,10 +526,88 @@ const PostMenu = ({ post, onEditPost }) => {
             Edit Post
           </button>
           <button
+            onClick={() => handleDelete}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CommunityMenu = ({ community, setCreatedCommunities }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this community?");
+    if (!confirmDelete) return;
+
+    // Delete related records in user_communities first
+    const { error: userCommunityError } = await supabase
+      .from('user_communities')
+      .delete()
+      .eq('community_id', community.id);
+
+    if (userCommunityError) {
+      console.error('Error deleting user_communities:', userCommunityError);
+      alert('❌ Failed to delete community due to related records.');
+      return;
+    }
+
+    // Delete the community
+    const { error: communityError } = await supabase
+      .from('communities')
+      .delete()
+      .eq('id', community.id);
+
+    if (communityError) {
+      console.error('Error deleting community:', communityError);
+      alert('❌ Failed to delete community.');
+    } else {
+      alert('✅ Community deleted successfully.');
+      setCreatedCommunities(prev => prev.filter(c => c.id !== community.id));
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button onClick={() => setOpen(!open)} className="text-lg text-gray-600 hover:text-[#7c3aed]">⋮</button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg border rounded-lg z-10">
+          <button
+            onClick={() => {
+              navigate(`/edit-community/${community.id}`);
+              setOpen(false);
+            }}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Edit Community
+          </button>
+          <button
             onClick={handleDelete}
             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
           >
-            Delete Post
+            Delete Community
           </button>
         </div>
       )}
