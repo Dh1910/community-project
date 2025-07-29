@@ -29,7 +29,6 @@ const About = () => {
                             >
                                 Back to Home
                             </Link>
-
                         </div>
                     </div>
                 </section>
@@ -66,25 +65,46 @@ const About = () => {
                         <p className="text-lg text-gray-600 mb-12">
                             The passionate people behind Grow With Me who are dedicated to helping you achieve your goals.
                         </p>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden group">
-                                <img
-                                    src="https://readdy.ai/api/search-image?query=Professional%20headshot%20of%20a%20confident%20male%20tech%20founder..."
-                                    alt="Michael Reynolds"
-                                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform"
-                                />
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold">Michael Reynolds</h3>
-                                    <p className="text-primary font-medium mb-2">Founder & CEO</p>
-                                    <p className="text-gray-600">
-                                        Former music teacher who struggled to track his students' progress. Passionate about helping others build consistent learning habits.
-                                    </p>
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {[
+                            
+                                {
+                                    name: 'Dhyani Marvaniya',
+                                    role: 'Frontend Developer',
+                                    desc: 'Loves turning designs into functional code. She believes in making growth visually engaging and interactive.',
+                                    img:'https://images.unsplash.com/photo-1483909796554-bb0051ab60ad'
+                                },
+                                {
+                                    name: 'Nency Patel',
+                                    role: 'UI/UX Designer',
+                                    desc: 'Passionate about creating intuitive experiences that motivate users to stay consistent and enjoy the journey.',
+                                    img: 'https://i.pinimg.com/originals/b3/1a/9a/b31a9ac79ce2e855b120cf4ad9e1ad1e.jpg'
+                                },
+                                {
+                                    name: 'Samip Shah',
+                                    role: 'Backend Engineer',
+                                    desc: 'Ensures the app runs smoothly under the hood. Focused on secure, scalable systems that support your progress.',
+                                    img: 'https://images.unsplash.com/photo-1544005313-ba2950b36d41'
+                                }
+                            ].map((member, idx) => (
+                                <div key={idx} className="bg-white rounded-lg shadow-md overflow-hidden group">
+                                    <img
+                                        src={member.img}
+                                        alt={member.name}
+                                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform"
+                                    />
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold">{member.name}</h3>
+                                        <p className="text-primary font-medium mb-2">{member.role}</p>
+                                        <p className="text-gray-600">{member.desc}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </section>
 
+                {/* Our Impact */}
                 <section className="py-16 bg-gray-50">
                     <div className="container mx-auto px-4 text-center">
                         <h2 className="text-3xl font-bold mb-6">Our Impact</h2>
@@ -124,7 +144,7 @@ const About = () => {
                             to="/"
                             className="bg-white text-[#7C3AED] px-6 py-3 rounded-md text-lg font-semibold shadow hover:bg-gray-100 transition"
                         >
-                            Start Your Growth Journey→
+                            Start Your Growth Journey →
                         </Link>
                     </div>
                 </section>
