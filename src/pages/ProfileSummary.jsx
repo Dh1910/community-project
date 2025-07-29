@@ -68,10 +68,10 @@ const ProfileSummary = () => {
 
       const { data: joined } = await supabase
         .from('user_communities')
-        .select('community_id, communities(name)')
+        .select('community_id, communities(name, description)')
         .eq('user_id', user.id);
 
-      setJoinedCommunities(joined?.map(j => j.communities?.name) || []);
+      setJoinedCommunities(joined?.map(j => ({ name: j.communities?.name, description: j.communities?.description })) || []);
 
       const { data: created } = await supabase
         .from('communities')
@@ -297,7 +297,10 @@ const ProfileSummary = () => {
               {joinedCommunities.length > 0 ? (
                 <ul className="mt-2 space-y-2">
                   {joinedCommunities.map((community, index) => (
-                    <li key={index} className="text-sm text-gray-600">🧩 {community}</li>
+                    <li key={index} className="text-sm text-gray-600">
+                      <div className="font-semibold">👥 {community.name}</div>
+                      <p className="text-xs text-gray-500 mt-1">{community.description || 'No description available'}</p>
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -485,7 +488,7 @@ const PostMenu = ({ post, onEditPost }) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post?");
     if (!confirmDelete) return;
 
-    const { error } = await supabase.delete().from('posts').eq('id', post.id);
+    const { error } = await supabase.from('posts').delete().eq('id', post.id);
     if (error) {
       console.error('Error deleting post:', error);
       alert("❌ Failed to delete post.");
@@ -507,7 +510,7 @@ const PostMenu = ({ post, onEditPost }) => {
     };
 
     return () => {
-      document.removeEventListener("mousedown", handleDelete);
+      document.removeEventListener("mousedown", handleClick);
     };
   }, [open]);
 
@@ -526,7 +529,7 @@ const PostMenu = ({ post, onEditPost }) => {
             Edit Post
           </button>
           <button
-            onClick={() => handleDelete}
+            onClick={handleDelete}
             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
           >
             Delete

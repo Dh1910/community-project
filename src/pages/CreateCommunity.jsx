@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -8,10 +8,12 @@ const CreateCommunity = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageError, setImageError] = useState(false);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -26,9 +28,46 @@ const CreateCommunity = () => {
     fetchUser();
   }, [navigate]);
 
+  // ✅ Live image URL validation with extension check & load fail fallback
+  useEffect(() => {
+    if (!imageUrl) {
+      setImageError(false);
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+      const isValidExtension = validExtensions.some(ext =>
+        imageUrl.toLowerCase().includes(ext)
+      );
+
+      if (!isValidExtension) {
+        setImageError(true);
+        return;
+      }
+
+      const img = new Image();
+      img.src = `${imageUrl}?t=${Date.now()}`; // 🔄 prevent cache
+      img.onload = () => setImageError(false);
+      img.onerror = () => setImageError(true);
+    }, 500);
+  }, [imageUrl]);
+
   const handleCreate = async () => {
     if (!name.trim()) {
       setError('Community name is required.');
+      return;
+    }
+
+    if (!imageUrl.trim()) {
+      setError('Community image URL is required.');
+      return;
+    }
+
+    if (imageError) {
+      setError('Please enter a valid image URL before creating.');
       return;
     }
 
@@ -106,7 +145,6 @@ const CreateCommunity = () => {
             className="w-full border px-3 py-2 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            disabled={loading}
           />
 
           <textarea
@@ -115,30 +153,30 @@ const CreateCommunity = () => {
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={loading}
           />
 
-          {/* ✅ Image URL Input */}
           <input
             type="text"
-            placeholder="Image URL (optional)"
-            className="w-full border px-3 py-2 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
+            placeholder="Image URL (required)"
+            className="w-full border px-3 py-2 mb-2 rounded focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
-            disabled={loading}
           />
 
-          {/* ✅ Image Preview */}
-          {imageUrl && (
+          {/* ✅ Show preview if image URL is valid */}
+          {imageUrl && !imageError && (
             <img
-              src={imageUrl}
+              src={`${imageUrl}?t=${Date.now()}`} // cache busting
               alt="Preview"
-              className="w-full h-48 object-cover rounded mb-4"
-              onError={(e) => {
-                e.target.src = '';
-                setImageUrl('');
-              }}
+              className="w-full h-48 object-cover rounded mb-2"
             />
+          )}
+
+          {/* ❌ Show warning if image URL is invalid */}
+          {imageError && (
+            <p className="text-red-500 text-sm mb-4">
+              ⚠️ Invalid image URL. Please enter a valid link ending in .jpg, .png, etc.
+            </p>
           )}
 
           <button
