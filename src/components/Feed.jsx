@@ -1,57 +1,69 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient"; // supabase client import
 
 function Feed() {
-  const posts = [
-    {
-      user: 'Alex M.',
-      skill: 'Coding',
-      content: 'Just finished my first React project! 🎉 #GrowWithMe',
-      image: 'https://readdy.ai/api/search-image?query=A%20screenshot%20of%20a%20React%20project%20on%20a%20laptop%20screen%2C%20showing%20clean%20code%20and%20a%20modern%20UI.%20The%20background%20is%20a%20desk%20with%20a%20coffee%20mug%20and%20a%20notepad%2C%20representing%20a%20coding%20achievement.%20The%20image%20is%20bright%20and%20motivational%2C%20suitable%20for%20a%20social%20feed%20on%20a%20skill-tracking%20website.&width=300&height=200&seq=feed1',
-    },
-    {
-      user: 'Sarah L.',
-      skill: 'Guitar',
-      content: 'Learned a new chord progression today! Feeling accomplished. 🎸',
-      image: 'https://readdy.ai/api/search-image?query=A%20close-up%20of%20a%20guitar%20being%20played%2C%20showing%20fingers%20on%20the%20fretboard%2C%20representing%20a%20guitar%20learning%20milestone.%20The%20background%20is%20blurred%20with%20a%20warm%20tone%2C%20focusing%20on%20the%20guitar.%20The%20image%20is%20inspiring%20and%20suitable%20for%20a%20social%20feed%20on%20a%20skill-tracking%20website.&width=300&height=200&seq=feed2',
-    },
-    {
-      user: 'Mike R.',
-      skill: 'Fitness',
-      content: 'Hit a new personal record on my deadlift! 💪 #GrowWithMe',
-      image: 'https://readdy.ai/api/search-image?query=A%20person%20lifting%20a%20barbell%20in%20a%20gym%2C%20representing%20a%20fitness%20achievement.%20The%20background%20shows%20gym%20equipment%20and%20a%20motivational%20atmosphere%20with%20bright%20lighting.%20The%20image%20is%20energetic%20and%20suitable%20for%20a%20social%20feed%20on%20a%20skill-tracking%20website.&width=300&height=200&seq=feed3',
-    },
-    {
-      user: 'Emma T.',
-      skill: 'Painting',
-      content: 'My latest watercolor piece! Loving this journey. 🎨',
-      image: 'https://readdy.ai/api/search-image?query=A%20colorful%20watercolor%20painting%20on%20an%20easel%2C%20representing%20an%20artistic%20achievement.%20The%20background%20includes%20art%20supplies%20like%20brushes%20and%20a%20palette%2C%20with%20a%20bright%20and%20creative%20vibe.%20The%20image%20is%20inspiring%20and%20suitable%20for%20a%20social%20feed%20on%20a%20skill-tracking%20website.&width=300&height=200&seq=feed4',
-    },
-  ];
+  const [posts, setPosts] = useState([]);
 
+  // Fetch posts from Supabase
   useEffect(() => {
-    const scrollContainer = document.querySelector('.feed-scroll');
-    const leftArrow = document.querySelector('.feed-left-arrow');
-    const rightArrow = document.querySelector('.feed-right-arrow');
+    const fetchPosts = async () => {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          id,
+          content,
+          image_url,
+          skill,
+          created_at,
+          profiles(full_name, avatar_url)
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching posts:", error.message);
+      } else if (data) {
+        const formatted = data.map((post) => ({
+          user: post.profiles?.full_name || "Anonymous",
+          skill: post.skill || "General",
+          content: post.content,
+          image: post.image_url,
+          avatar: post.profiles?.avatar_url || "/default.png",
+        }));
+
+        setPosts(formatted);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Scroll arrows effect
+  useEffect(() => {
+    const scrollContainer = document.querySelector(".feed-scroll");
+    const leftArrow = document.querySelector(".feed-left-arrow");
+    const rightArrow = document.querySelector(".feed-right-arrow");
 
     if (window.innerWidth >= 768) {
-      leftArrow.style.display = 'flex';
-      rightArrow.style.display = 'flex';
+      leftArrow.style.display = "flex";
+      rightArrow.style.display = "flex";
     }
 
     const scrollLeft = () => {
-      scrollContainer.scrollBy({ left: -300, behavior: 'smooth' });
+      scrollContainer.scrollBy({ left: -300, behavior: "smooth" });
     };
 
     const scrollRight = () => {
-      scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
+      scrollContainer.scrollBy({ left: 300, behavior: "smooth" });
     };
 
-    leftArrow.addEventListener('click', scrollLeft);
-    rightArrow.addEventListener('click', scrollRight);
+    leftArrow.addEventListener("click", scrollLeft);
+    rightArrow.addEventListener("click", scrollRight);
 
     return () => {
-      leftArrow.removeEventListener('click', scrollLeft);
-      rightArrow.removeEventListener('click', scrollRight);
+      leftArrow.removeEventListener("click", scrollLeft);
+      rightArrow.removeEventListener("click", scrollRight);
     };
   }, []);
 
@@ -67,9 +79,9 @@ function Feed() {
             <i className="ri-arrow-left-s-line ri-lg"></i>
           </button>
           <div className="feed-scroll flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-6">
-            {posts.map(post => (
+            {posts.map((post, index) => (
               <div
-                key={post.user + post.skill}
+                key={index}
                 className="snap-start flex-shrink-0 w-[300px] bg-white rounded-lg shadow-md overflow-hidden"
               >
                 <img
@@ -78,8 +90,17 @@ function Feed() {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold">{post.user}</h3>
-                  <p className="text-gray-500 text-sm mb-2">{post.skill}</p>
+                  {/* Profile info with avatar */}
+                  <div className="flex items-center mb-3">
+                    <img
+                      src={post.avatar}
+                      alt={post.user}
+                      className="w-8 h-8 rounded-full mr-2"
+                    />
+                    <h3 className="text-lg font-semibold">{post.user}</h3>
+                  </div>
+
+                  <p className="text-[#7c3aed] font-bold text-sm mb-2">{post.skill}</p>
                   <p className="text-gray-600">{post.content}</p>
                 </div>
               </div>

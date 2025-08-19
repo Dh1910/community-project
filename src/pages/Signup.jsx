@@ -20,44 +20,48 @@ const Signup = ({ isOpen, onClose }) => {
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    // Step 1: Signup via Supabase Auth
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    try {
+      // ✅ Step 1: Signup via Supabase Auth (password automatically secure)
+      const { data, error } = await supabase.auth.signUp({ email, password });
 
-    if (error) {
-      if (error.message.toLowerCase().includes('email')) {
-        setErrorMsg('This email is already registered. Please log in instead.');
-      } else {
-        setErrorMsg('Signup failed: ' + error.message);
-      }
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Step 2: Add user to 'profiles' table
-    const userId = data?.user?.id;
-    if (userId) {
-      const { error: profileError } = await supabase.from('profiles').upsert([
-        {
-          id: userId, 
-          user_id: userId, // ✅ This becomes foreign key
-          full_name: name,
-          email: email,
-        },
-      ]);
-
-      if (profileError) {
-        setErrorMsg('Profile creation failed: ' + profileError.message);
+      if (error) {
+        if (error.message.toLowerCase().includes('email')) {
+          setErrorMsg('This email is already registered. Please log in instead.');
+        } else {
+          setErrorMsg('Signup failed: ' + error.message);
+        }
         setIsSubmitting(false);
         return;
       }
 
-      setSuccessMsg('✅ Signup successful. Please log in.');
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
-    }
+      // ✅ Step 2: Add user info to 'profiles' table (no password stored here)
+      const userId = data?.user?.id;
+      if (userId) {
+        const { error: profileError } = await supabase.from('profiles').upsert([
+          {
+            id: userId,
+            user_id: userId, // foreign key
+            full_name: name,
+            email: email,
+          },
+        ]);
 
-    setIsSubmitting(false);
+        if (profileError) {
+          setErrorMsg('Profile creation failed: ' + profileError.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        setSuccessMsg('✅ Signup successful. Please log in.');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      }
+    } catch (err) {
+      setErrorMsg('Something went wrong: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // 👉 Full Page Render (if `isOpen` is undefined)
@@ -77,7 +81,15 @@ const Signup = ({ isOpen, onClose }) => {
                 <input name="name" type="text" placeholder="Name" className="w-full border p-2 rounded" required />
                 <input name="email" type="email" placeholder="Email" className="w-full border p-2 rounded" required />
                 <input name="password" type="password" placeholder="Password" className="w-full border p-2 rounded" required />
-                <button type="submit" disabled={isSubmitting} className={`w-full py-2 rounded transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'}`}>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full py-2 rounded transition ${
+                    isSubmitting
+                      ? 'bg-gray-400 cursor-not-allowed text-white'
+                      : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'
+                  }`}
+                >
                   {isSubmitting ? 'Signing Up...' : 'Sign Up'}
                 </button>
               </form>
@@ -112,7 +124,15 @@ const Signup = ({ isOpen, onClose }) => {
           <input name="name" type="text" placeholder="Name" className="w-full border p-2 rounded" required />
           <input name="email" type="email" placeholder="Email" className="w-full border p-2 rounded" required />
           <input name="password" type="password" placeholder="Password" className="w-full border p-2 rounded" required />
-          <button type="submit" disabled={isSubmitting} className={`w-full py-2 rounded transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'}`}>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-2 rounded transition ${
+              isSubmitting
+                ? 'bg-gray-400 cursor-not-allowed text-white'
+                : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white'
+            }`}
+          >
             {isSubmitting ? 'Signing Up...' : 'Sign Up'}
           </button>
         </form>

@@ -60,7 +60,7 @@ function Skills() {
           ))}
         </div>
       </div>
-    </section>
+    </section>  
   );
 }
 
